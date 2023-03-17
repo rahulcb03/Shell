@@ -1,9 +1,14 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -g -fsanitize=address,undefined 
+CFLAGS = -Wall -Wextra -Wundef
 
-mysh: mysh.c
-	$(CC) $(CFLAGS) -c mymalloc.c
-	$(CC) $(CFLAGS) -o mysh mysh.c
+TARGET = mysh
+OBJS = mysh.o
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+mysh.o: mysh.c
+	$(CC) $(CFLAGS) -c $<
 
 clean:
-	
+	rm -f $(TARGET) $(OBJS)
