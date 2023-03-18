@@ -45,18 +45,19 @@ int main(int argc, char** argv) {
         token = strtok(buffer, "\n");
 
         while (token != NULL) {
+		
             // Checking if the user wants to exit batch mode
             if (strcmp(token, "exit") == 0) {
                 char exit_message[] = {"mysh: exiting\n"};
-				//Checking to see if writing to the commmand line was successful
+		//Checking to see if writing to the commmand line was successful
                 if (write(1, exit_message, strlen(exit_message)) == -1) {
                     perror("Error writing to STDOUT");
-					return EXIT_FAILURE;
+		    return EXIT_FAILURE;
                 }
                 return EXIT_SUCCESS;
             }
 			
-			//Other shinaningnasn with the token 
+	//Other shinaningnasn with the token 
             token = strtok(NULL, "\n");
         }
 
