@@ -170,8 +170,8 @@ int printCurrDir(){
 
 	//Writing to the stdout and checking if theres any issues with the writing
 	if (write(1, buffer, strlen(buffer)) == -1) {
-       perror("Error writing to STDOUT");
-       return 1;
+       		perror("Error writing to STDOUT");
+       		return 1;
 	}
 	
 	//Free buffer and return success
