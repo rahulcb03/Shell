@@ -150,7 +150,7 @@ int changeDir(char* path){
 	
 	//Error if change directory doesn't work  :(
 	if(chdir(path)!=0){
-		perror("Error Changing Directories");
+		perror("cd : No such file or directory");
 		return 1;
 	}
 
