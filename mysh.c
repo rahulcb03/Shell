@@ -168,11 +168,35 @@ int main(int argc, char** argv) {
 			}
 			else{
 				// check if the first comand contains a '/'
+				if(strchr(tokens, (int)'/') != NULL ){
+					
+
+				}else{
+					char a[] = "command not found\n"; 
+					write(1, a, strlen(a) ); 
+					if(argc ==1){
+						c = '!'; 
+						write(1, &c, 1);
+					}
+				}
 				// if it does then see if that path exists and can be executed 
 				// if it does not exist then look in the list of directories 
 				// send path and remianing strings to method to execute the program 
 			}
-		}		
+		}
+
+		//
+		//int n=0; 
+		//while(n<(counter + strlen(line) +1) ){
+			
+		//       n += strlen(&tokens[n])+1; 	
+		//}		
+	  	
+		
+			
+		
+		
+		
 
         	line = strtok(NULL, "\n");
         }
