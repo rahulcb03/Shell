@@ -172,20 +172,7 @@ int main(int argc, char** argv) {
 				// if it does not exist then look in the list of directories 
 				// send path and remianing strings to method to execute the program 
 			}
-		}
-
-		//
-		//int n=0; 
-		//while(n<(counter + strlen(line) +1) ){
-			
-		//       n += strlen(&tokens[n])+1; 	
-		//}		
-	  	
-		
-			
-		
-		
-		
+		}		
 
         	line = strtok(NULL, "\n");
         }
