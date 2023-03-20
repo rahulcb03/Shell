@@ -151,11 +151,11 @@ int changeDir(char* path){
 	//Error if change directory doesn't work  :(
 	if(chdir(path)!=0){
 		perror("Error Changing Directories");
-		return 0;
+		return 1;
 	}
 
 	//If Everything goes as planned return success muahahahahahha
-	return 1; 
+	return 0; 
 }
 //Printing the Current Directory
 int printCurrDir(){
@@ -165,18 +165,18 @@ int printCurrDir(){
 	//Checking to see if there was an error with getcwd
 	if(buffer == NULL){
 		perror("cd : No such file or directory");
-		return 0;
+		return 1;
 	}
 
 	//Writing to the stdout and checking if theres any issues with the writing
 	if (write(1, buffer, strlen(buffer)) == -1) {
        perror("Error writing to STDOUT");
-       return 0;
+       return 1;
 	}
 	
 	//Free buffer and return success
 	free(buffer);
-	return 1;
+	return 0;
 
 }
 
