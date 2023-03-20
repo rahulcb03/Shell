@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Wundef
+CFLAGS = -std=c99 -Wall -g -fsanitize=address,undefined 
 
 TARGET = mysh
 OBJS = mysh.o
@@ -11,4 +11,4 @@ mysh.o: mysh.c
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f $(TARGET) $(OBJS)
+	
