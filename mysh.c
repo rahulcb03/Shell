@@ -6,6 +6,41 @@
 
 #define BUFSIZE 100
 
+//Changing the Directory 
+int changeDir(char* path){
+	
+	//Error if change directory doesn't work  :(
+	if(chdir(path)!=0){
+		perror("Error Changing Directories");
+		return 1;
+	}
+
+	//If Everything goes as planned return success muahahahahahha
+	return 0; 
+}
+
+//Printing the Current Directory
+int printCurrDir(){
+	//Get all the paths in the current directory
+	char *buffer = getcwd(NULL, 0);
+
+	//Checking to see if there was an error with getcwd
+	if(buffer == NULL){
+		perror("Error getting current working directory"); 
+		return 1;
+	}
+
+	//Writing to the stdout and checking if theres any issues with the writing
+	write(1, buffer, strlen(buffer));
+	char c='\n'; 
+	write(1, &c, 1); 
+			
+	//Free buffer and return success
+	free(buffer);
+	return 0;
+
+}
+
 int main(int argc, char** argv) {
     int fd;
 
@@ -107,8 +142,25 @@ int main(int argc, char** argv) {
 			}
 		}
 		tokens[strlen(line)+counter ] = '\0';
-
-		
+		char c; 
+		if(strcmp( tokens, "cd") == 0){
+			if(changeDir(&tokens[3]) ){
+				if(argc == 1){
+					c = '!'; 
+					write(1, &c, 1);
+				}
+			}
+		}
+		else{
+			if(strcmp(tokens, "pwd") ==0){
+				if(printCurrDir( ) ){
+					if(argc == 1){
+						c = '!'; 
+						write(1, &c, 1);
+					}
+				}
+			}
+		}	
 		//loop though all tokens
 		int n=0; 
 		while(n<(counter + strlen(line) +1) ){
@@ -145,39 +197,4 @@ int main(int argc, char** argv) {
     }
     return EXIT_SUCCESS;
 }
-//Changing the Directory 
-int changeDir(char* path){
-	
-	//Error if change directory doesn't work  :(
-	if(chdir(path)!=0){
-		perror("cd : No such file or directory");
-		return 1;
-	}
-
-	//If Everything goes as planned return success muahahahahahha
-	return 0; 
-}
-//Printing the Current Directory
-int printCurrDir(){
-	//Get all the paths in the current directory
-	char *buffer = getcwd(NULL, 0);
-
-	//Checking to see if there was an error with getcwd
-	if(buffer == NULL){
-		perror("cd : No such file or directory");
-		return 1;
-	}
-
-	//Writing to the stdout and checking if theres any issues with the writing
-	if (write(1, buffer, strlen(buffer)) == -1) {
-       		perror("Error writing to STDOUT");
-       		return 1;
-	}
-	
-	//Free buffer and return success
-	free(buffer);
-	return 0;
-
-}
-
 
