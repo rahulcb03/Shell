@@ -145,4 +145,58 @@ int main(int argc, char** argv) {
     }
     return EXIT_SUCCESS;
 }
+//Changing the Directory 
+int changeDir(char* path){
+	//Get the size of the path and initalize the length of the current and target path directories to the length of the path
+	size_t pathLen = strlen(path);
+	char currentDir[pathLen + 1];
+	char targetDir[pathLen +1];
+
+	//absolute path ex. "cd /path/to/directory_name"
+	if(path[0]=='/'){
+		strncpy(targetDir, path, pathLen + 1);
+	}
+	//relative path ex. "cd directory_name"
+	else{
+		snprintf(targetDir, pathLen+2, "%s%s", currentDir, path );
+	}
+	
+	//Error if the target directory is not inside the current directory :(
+	if(strstr(targetDir, currentDir)==NULL){
+		perror("Error: Directory Not Found");
+		return 0;
+	}
+	
+	//Error if change directory doesn't work  :(
+	if(chdir(targetDir)!=0){
+		perror("Error Changing Directories");
+		return 0;
+	}
+
+	//If Everything goes as planned return success muahahahahahha
+	return 1; 
+}
+//Printing the Current Directory
+int printCurrDir(){
+	//Get all the paths in the current directory
+	char *buffer = getcwd(NULL, 0);
+
+	//Checking to see if there was an error with getcwd
+	if(buffer == NULL){
+		perror("cd : No such file or directory");
+		return 0;
+	}
+
+	//Writing to the stdout and checking if theres any issues with the writing
+	if (write(1, buffer, strlen(buffer)) == -1) {
+       perror("Error writing to STDOUT");
+       return 0;
+	}
+	
+	//Free buffer and return success
+	free(buffer);
+	return 1;
+
+}
+
 
