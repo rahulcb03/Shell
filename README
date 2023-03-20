@@ -1,1 +1,14 @@
 Project II: My shell | Rahul Badiani rb1217 & Suchit Kalluru srk170
+Purpose: Create a basic command line shell "mysh.c" using only POSIX Functions. Has two modes "Batch" & "Interactive"
+    - Batch: Allows the user to input a file after the command './mysh' in order to execute commands from within the file
+    - Interactive : Allows the user to input multiple generic commands(one process at a time) imitating a basic command line shell found on common OS
+
+Implementation:
+
+1) We had to check the standard input to figure out which mode the user wanted to use. We did this by checking the number of arguments inputted 
+   (1 -> Interactive | 2+ -> Batch). We then set the file descriptor to the respective mode.
+   
+2) Next we began tokenizing the users input(this happens regardless of the mode because both modes involve special tokens that need to be tokenized 
+   to execute the desired commands). To start the process we created a loop to read until the end of file/line (depending on mode). Then we created a 
+   buffer and a 'line' variable which holds the command the user wants to exectue. Then we looped through the line tokenizing each key withiin the command
+   and extiing if the keyword 'exit' is hit. 
