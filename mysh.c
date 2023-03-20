@@ -147,28 +147,9 @@ int main(int argc, char** argv) {
 }
 //Changing the Directory 
 int changeDir(char* path){
-	//Get the size of the path and initalize the length of the current and target path directories to the length of the path
-	size_t pathLen = strlen(path);
-	char currentDir[pathLen + 1];
-	char targetDir[pathLen +1];
-
-	//absolute path ex. "cd /path/to/directory_name"
-	if(path[0]=='/'){
-		strncpy(targetDir, path, pathLen + 1);
-	}
-	//relative path ex. "cd directory_name"
-	else{
-		snprintf(targetDir, pathLen+2, "%s%s", currentDir, path );
-	}
-	
-	//Error if the target directory is not inside the current directory :(
-	if(strstr(targetDir, currentDir)==NULL){
-		perror("Error: Directory Not Found");
-		return 0;
-	}
 	
 	//Error if change directory doesn't work  :(
-	if(chdir(targetDir)!=0){
+	if(chdir(path)!=0){
 		perror("Error Changing Directories");
 		return 0;
 	}
