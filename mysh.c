@@ -34,8 +34,8 @@ int main(int argc, char** argv) {
 
     }
 
-    char *line, **tokens; 
-    int numTokens=0; 
+    char *line, *tokens; 
+    int counter, tokenIndex; 
     char str[] = {"mysh> "};
     char buffer[BUFSIZE];
     ssize_t bytes = read(fd, buffer, BUFSIZE - 1);
@@ -47,8 +47,8 @@ int main(int argc, char** argv) {
         line = strtok(buffer, "\n");
 
         while (line !=  NULL) {
-		
-            	// Checking if the user wants to exit batch mode
+			
+            	// Checking if the user wants to exit
 		if (strcmp(line, "exit") == 0) {
                		char exit_message[] = {"mysh: exiting\n"};
 
@@ -60,24 +60,65 @@ int main(int argc, char** argv) {
                 return EXIT_SUCCESS;
             	}
 	    
-		//split each line into to tokens, each token is either '>', '<', '|', or chars seperated by spaces
+		//1. split each line into to tokens, each token is either '>', '<', '|', or chars seperated by spaces
+		//plan: create new String that holds the tokens, the tokens will be seperated by \0 so they can be used as spereate strings
 			
+		counter =0; 
+		//1a. find how many additional spaces are needed to include \0 for each token
+		for(int x=1; x<strlen(line); x++){
+			if(line[x] == ' ' && line[x-1] == ' ') 
+				counter --; 
+			if( (line[x] == '<' || line[x] == '>'|| line[x] == '|')  && (line[x-1] != '<' &&  line[x-1] != '>' && line[x-1] != '|' && line[x-1] != ' '))
+				counter ++; 		
+			
+		       	if((line[x] != '<' && line[x] != '>' && line[x] != '|' && line[x] != ' ') && (line[x-1] == '<' || line[x-1] == '>'|| line[x-1] == '|') )	
+				counter++;
+		}		
 		
-			// find the num of tokens in the line
-		numTokens = 0; 
-	  	for(int i=1; i<strlen(line); i++){
-			if(line[i] == ' ' && (line[i-1] != '<' &&  line[i-1] != '>' && line[i-1] != '|' && line[i-1] != ' ')){numTokens++; }
+
+		tokens = (char *)malloc(sizeof(char) * (strlen(line) +counter+1) ); 
+
+		//initailize the new string with the tokens and \0 between each token 
+		tokens[0] = line[0];	
+		tokenIndex=1; 
+		for(int i=1; i<strlen(line); i++) {
+			if(line[i] == ' ' && line[i-1] != ' '){
+				tokens[tokenIndex] = '\0'; 
+				tokenIndex++;
+			}
 			else{
-				if( (line[i] == '<' || line[i] == '>'|| line[i] == '|')  && (line[i-1] != '<' &&  line[i-1] != '>' && line[i-1] != '|' && line[i-1] != ' ')){numTokens += 2;  } 
+				if( (line[i] == '<' || line[i] == '>'|| line[i] == '|')  && line[i-1] != ' '){
+					tokens[tokenIndex] = '\0';
+					tokenIndex++; 
+					tokens[tokenIndex] = line[i]; 
+					tokenIndex++;
+				}
 				else{
-					if( (line[i] == '<' || line[i] == '>'|| line[i] == '|')  &&  (line[i-1] == '<' ||  line[i-1] == '>' || line[i-1] == '|' || line[i-1] == ' ') ){numTokens ++; }
-					else{
-						if(i == (strlen(line)-1) && (line[i] != '<' && line[i] != '>' && line[i] != '|' && line[i] != ' ')){ numTokens++; }; 
+					if((line[i] != '<' && line[i] != '>' && line[i] != '|' && line[i] != ' ') && (line[i-1] == '<' || line[i-1] == '>'|| line[i-1] == '|') ){
+						tokens[tokenIndex] = '\0'; 
+						tokenIndex++; 
 					}
+					if(line[i] != ' '){	
+						tokens[tokenIndex] = line[i] ;
+						tokenIndex++; 
+					}
+					
 				}
 			}
 		}
-	
+		tokens[strlen(line)+counter ] = '\0';
+
+		
+		//loop though all tokens
+		int n=0; 
+		while(n<(counter + strlen(line) +1) ){
+			
+			//do the calls here
+		       n += strlen(&tokens[n])+1; 	
+		}		
+	  	
+		
+			
 		
 			
 		//if the comand is a built in comand,  execute it 
