@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 
 		tokens = (char *)malloc(sizeof(char) * (strlen(line) +counter+1) ); 
 
-		//initailize the new string with the tokens and \0 between each token 
+		//1b. initailize the new string with the tokens and \0 between each token 
 		tokens[0] = line[0];	
 		tokenIndex=1; 
 		for(int i=1; i<strlen(line); i++) {
