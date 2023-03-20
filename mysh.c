@@ -77,10 +77,11 @@ int main(int argc, char** argv) {
 
     // read in the bytes until end of file
     while (bytes != 0) {
-
+	// add \0 to the end so we can use strtok( ) to split the buffer into serpatelines
         buffer[bytes] = '\0';
         line = strtok(buffer, "\n");
-
+	
+	//traverse through the lines in the buffer
         while (line !=  NULL) {
 			
             	// Checking if the user wants to exit
@@ -89,10 +90,10 @@ int main(int argc, char** argv) {
 
 			//Checking to see if writing to the commmand line was successful
                		 if (write(1, exit_message, strlen(exit_message)) == -1) {
-               		 perror("Error writing to STDOUT");
-		     	 return EXIT_FAILURE;
-                }
-                return EXIT_SUCCESS;
+               			 perror("Error writing to STDOUT");
+		     		 return EXIT_FAILURE;
+               		 }
+               		 return EXIT_SUCCESS;
             	}
 	    
 		//1. split each line into to tokens, each token is either '>', '<', '|', or chars seperated by spaces
@@ -101,16 +102,19 @@ int main(int argc, char** argv) {
 		counter =0; 
 		//1a. find how many additional spaces are needed to include \0 for each token
 		for(int x=1; x<strlen(line); x++){
+			//check if there are multiple spaces
 			if(line[x] == ' ' && line[x-1] == ' ') 
 				counter --; 
+			//check if curr char is a token and if last char is a token
 			if( (line[x] == '<' || line[x] == '>'|| line[x] == '|')  && (line[x-1] != '<' &&  line[x-1] != '>' && line[x-1] != '|' && line[x-1] != ' '))
 				counter ++; 		
 			
+			//check if curr char is not a token but the last char was a token
 		       	if((line[x] != '<' && line[x] != '>' && line[x] != '|' && line[x] != ' ') && (line[x-1] == '<' || line[x-1] == '>'|| line[x-1] == '|') )	
 				counter++;
 		}		
 		
-
+		//using the counter in the above for loop, malloc an string that can hold each token so that it can be seperated by '\0'
 		tokens = (char *)malloc(sizeof(char) * (strlen(line) +counter+1) ); 
 
 		//1b. initailize the new string with the tokens and \0 between each token 
@@ -142,7 +146,9 @@ int main(int argc, char** argv) {
 			}
 		}
 		tokens[strlen(line)+counter ] = '\0';
+
 		char c; 
+		//check if the first comand is a built in comand (cd,pwd )
 		if(strcmp( tokens, "cd") == 0){
 			if(changeDir(&tokens[3]) ){
 				if(argc == 1){
@@ -160,25 +166,24 @@ int main(int argc, char** argv) {
 					}
 				}
 			}
-		}	
-		//loop though all tokens
-		int n=0; 
-		while(n<(counter + strlen(line) +1) ){
+			else{
+				// check if the first comand contains a '/'
+				// if it does then see if that path exists and can be executed 
+				// if it does not exist then look in the list of directories 
+				// send path and remianing strings to method to execute the program 
+			}
+		}
+
+		//
+		//int n=0; 
+		//while(n<(counter + strlen(line) +1) ){
 			
-			//do the calls here
-		       n += strlen(&tokens[n])+1; 	
-		}		
+		//       n += strlen(&tokens[n])+1; 	
+		//}		
 	  	
 		
 			
 		
-			
-		//if the comand is a built in comand,  execute it 
-
-		//if the first token is a path it is an executable file and it shoudl be run using fork() and execv( )
-			// check if the following token is '>' or '<' in this case redirect the STDIN or STDOUT
-		
-		//if the file is not a path check if it is in the listed directories on the p.2 pdf using stat( ), if it is not found are not executable return EXIT_FAILURE; 
 		
 		
 
