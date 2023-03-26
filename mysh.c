@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #define BUFSIZE 100
 
@@ -11,7 +12,7 @@ int changeDir(char* path){
 	
 	//Error if change directory doesn't work  :(
 	if(chdir(path)!=0){
-		perror("Error Changing Directories");
+		perror(path);
 		return 1;
 	}
 
@@ -42,7 +43,33 @@ int printCurrDir(){
 }
 
 //takes in a bare name and should return path to that executable or NULL if not found
+//if it doesnt return NULL than the return value must be freed
 char * findBare(char *token){
+	struct stat st;
+
+	char *dirs[] =  {"/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin","/bin"};
+
+	for(int i=0; i<6; i++){
+
+		//stores the new path in path
+		char *path = (char *)malloc(sizeof(char) * (strlen(dirs[i]) + strlen(token) +2) ); 
+		
+		int x=0, y=0; 
+
+		//build the new path 
+		for( x=0; x<strlen(dirs[i]); x++){ path[x] = dirs[i][x];}
+		path[x] = '/'; 
+		for( y=0; y<strlen(token) ; y++){ path[y+x+1] = token[y];}
+		path[y+x+1] = '\0';  
+		
+		//see if it exists and return it
+		if(stat(path, &st) == 0){
+			return path; 
+		}else{
+			free(path); 
+		}
+
+	}
 
 	return NULL; 
 	
@@ -50,33 +77,35 @@ char * findBare(char *token){
 
 int execute(char *tokens, int size, int nTok){
 	
-	char *path; 
-	char *input=NULL, *output=NULL; 
-	char ** arg = (char **) malloc(sizeof(char *) * (nTok +1) ); 
-	int tokInd=0 ;
-       	int num=0;	
-	int fds[2];
-		
+	char *path; //stores the exectable path
+	char *input=NULL, *output=NULL; //stores the input and output files
+	char ** arg = (char **) malloc(sizeof(char *) * (nTok +1) ); //stores arguments for executable
+	int tokInd=0 ; //used to index throuhgh tokens
+       	int num=0; //keeps track of the iterations
+	int fds[2]; //pipe FD
+	int isBare; //indicates if the path is a Bare name and that it must be freed 
+	
+	//check if pipe failed
 	if(pipe(fds) == -1){
 		perror("pipe");
 		return 1;
 	}
-	
-	do{
-		
-	
-		input = NULL;
-		output=NULL;
 
+	do{
+		input= NULL;
+		output= NULL;
+		isBare =0; 
 
 		//check if the exectuable is a bare name 
 		if(strchr(&tokens[tokInd], (int)'/') == NULL){
-			path = findBare(tokens) ; 
+			path = findBare(&tokens[tokInd]) ; 
+			
+			//if findBare returns NULL than it was not found
 			if(path == NULL){
-				char *c = &tokens[tokInd]; 
+				char *c = {"Executable is Invalid\n"}; 
 				write(1,c , strlen(c) ); 
 				return 1; 
-			}
+			}else{isBare =1; }
 		}else{
 			path = &tokens[tokInd]; 
 		}	
@@ -87,7 +116,9 @@ int execute(char *tokens, int size, int nTok){
 		tokInd += strlen(&tokens[tokInd]) +1; 
 		int argInd =1; 
 		
-	
+		//traverse until the end of command or until pipe
+		//if prev is < or > than the next token is a redirect file 
+		//else it is an argument 
 		while(tokInd<size && strcmp(&tokens[tokInd], "|") != 0 ){
 			if(strcmp(prevTok, "<") != 0 && strcmp(prevTok, ">") != 0 && strcmp(&tokens[tokInd], "<") != 0 && strcmp(&tokens[tokInd], ">") != 0  ){
 				arg[argInd] = &tokens[tokInd]; 
@@ -106,17 +137,18 @@ int execute(char *tokens, int size, int nTok){
 			tokInd +=strlen(&tokens[tokInd]) +1;
 		}
 		arg[argInd] = NULL; 
-
+		
+		//use fork to create child proccess
 		int pid = fork();
 
 		if(pid ==-1) {
 			perror("fork"); 
 			return 1;
 	       	}
-	
 
 		if( pid ==0){
-			
+		//currently in child process
+			//check if the input and output is set and if so open the file and redirect 
 			if( input != NULL) {
 				int inFD = open(input, O_RDONLY );
 				if(inFD == -1) {
@@ -133,55 +165,57 @@ int execute(char *tokens, int size, int nTok){
 				int outFD = open(output, O_WRONLY|O_CREAT|O_TRUNC, 0640 );
 				if( outFD == -1 ){
 					perror(output);
-
 					exit(1); 
 				}
 				if(dup2(outFD , STDOUT_FILENO) == -1){
-					perror( "dup2"); 
-					
+					perror( "dup2");
 					exit(1); 
-
 				}
 				close(outFD);
-
-			
 			}
-
+			
+			//check if there is a pipe and redirect using pipe
 			if(tokInd<size && strcmp(&tokens[tokInd] , "|") ==0 && num ==0 ) {
 				
 				if(dup2(fds[1], STDOUT_FILENO) == -1){
 					perror("pipe"); 
 					exit(1);	
-				}
-							
+				}			
 			}
+
+			//if this is the second iteration than there was a pipe so set the input to the pipe fds
 			if(num ==1){
 				if(dup2(fds[0], STDIN_FILENO) == -1){
 					perror("pipe"); 
 					exit(1);	
-				}
-					
+				}		
 			}
-				
 
-			
+			//excute the executable with the arguments given by the command 
 			execv(path,arg ); 
+
+			//if here than there was an error executing 
 			perror(path); 
 			exit(1);
 		
 		}
+		if(isBare){free(path);}
+
+		//wait for the child proccess and get the exit status
 		int status;
 		wait(&status);
 
+		//if the child proccess exits failure than return 1
 		if(WIFEXITED(status) ){
 			if(WEXITSTATUS(status) == 1){
 				return 1; 
 			}
-		
-		
 		}
 		
+		//close the input end of the pipe
 		if(num ==1){close(fds[0]);}
+
+		//close output end of the pipe and iterate over the '|'
 		if(tokInd<size){
 			close(fds[1]);
 			num =1;
@@ -309,7 +343,6 @@ int main(int argc, char** argv) {
 		tokens[strlen(line)+counter ] = '\0';
 		numTokens++; 
 		
-		
 		char c; 
 		//check if the first comand is a built in comand (cd,pwd )
 		if(strcmp( tokens, "cd") == 0){
@@ -318,7 +351,6 @@ int main(int argc, char** argv) {
 					c = '!'; 
 					write(1, &c, 1);
 				}
-				
 			}
 		}
 		else{
@@ -334,11 +366,8 @@ int main(int argc, char** argv) {
 				// pass the tokens to execute
 				if(execute(tokens, strlen(line) + counter, numTokens ) )
 					write(1, "!", 1);
-			}	
-											
-		}
-			  	
-				
+			}										
+		}			
 
         	line = strtok(NULL, "\n");
         }
