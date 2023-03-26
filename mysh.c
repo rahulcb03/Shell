@@ -41,6 +41,163 @@ int printCurrDir(){
 
 }
 
+//takes in a bare name and should return path to that executable or NULL if not found
+char * findBare(char *token){
+
+	return NULL; 
+	
+}
+
+int execute(char *tokens, int size, int nTok){
+	
+	char *path; 
+	char *input=NULL, *output=NULL; 
+	char ** arg = (char **) malloc(sizeof(char *) * (nTok +1) ); 
+	int tokInd=0 ;
+       	int num=0;	
+	int fds[2];
+		
+	if(pipe(fds) == -1){
+		perror("pipe");
+		return 1;
+	}
+	
+	do{
+		
+	
+		input = NULL;
+		output=NULL;
+
+
+		//check if the exectuable is a bare name 
+		if(strchr(&tokens[tokInd], (int)'/') == NULL){
+			path = findBare(tokens) ; 
+			if(path == NULL){
+				char *c = &tokens[tokInd]; 
+				write(1,c , strlen(c) ); 
+				return 1; 
+			}
+		}else{
+			path = &tokens[tokInd]; 
+		}	
+	
+		//build the argument list 
+		char *prevTok  = &tokens[tokInd]; 
+		arg[0] = &tokens[tokInd]; 
+		tokInd += strlen(&tokens[tokInd]) +1; 
+		int argInd =1; 
+		
+	
+		while(tokInd<size && strcmp(&tokens[tokInd], "|") != 0 ){
+			if(strcmp(prevTok, "<") != 0 && strcmp(prevTok, ">") != 0 && strcmp(&tokens[tokInd], "<") != 0 && strcmp(&tokens[tokInd], ">") != 0  ){
+				arg[argInd] = &tokens[tokInd]; 
+				argInd++;
+			}else{
+				if(strcmp(prevTok,"<") ==0){
+					input = &tokens[tokInd];
+				}
+				if(strcmp(prevTok, ">") ==0){
+					output = &tokens[tokInd];
+				}
+			
+			}
+
+			prevTok = &tokens[tokInd]; 
+			tokInd +=strlen(&tokens[tokInd]) +1;
+		}
+		arg[argInd] = NULL; 
+
+		int pid = fork();
+
+		if(pid ==-1) {
+			perror("fork"); 
+			return 1;
+	       	}
+	
+
+		if( pid ==0){
+			
+			if( input != NULL) {
+				int inFD = open(input, O_RDONLY );
+				if(inFD == -1) {
+					perror(input);
+					exit(1); 
+				}
+				if(dup2(inFD , STDIN_FILENO) == -1){
+					perror( "dup2"); 
+					exit(1); 
+				}
+				close(inFD);
+			}
+			if(output != NULL){
+				int outFD = open(output, O_WRONLY|O_CREAT|O_TRUNC, 0640 );
+				if( outFD == -1 ){
+					perror(output);
+
+					exit(1); 
+				}
+				if(dup2(outFD , STDOUT_FILENO) == -1){
+					perror( "dup2"); 
+					
+					exit(1); 
+
+				}
+				close(outFD);
+
+			
+			}
+
+			if(tokInd<size && strcmp(&tokens[tokInd] , "|") ==0 && num ==0 ) {
+				
+				if(dup2(fds[1], STDOUT_FILENO) == -1){
+					perror("pipe"); 
+					exit(1);	
+				}
+							
+			}
+			if(num ==1){
+				if(dup2(fds[0], STDIN_FILENO) == -1){
+					perror("pipe"); 
+					exit(1);	
+				}
+					
+			}
+				
+
+			
+			execv(path,arg ); 
+			perror(path); 
+			exit(1);
+		
+		}
+		int status;
+		wait(&status);
+
+		if(WIFEXITED(status) ){
+			if(WEXITSTATUS(status) == 1){
+				return 1; 
+			}
+		
+		
+		}
+		
+		if(num ==1){close(fds[0]);}
+		if(tokInd<size){
+			close(fds[1]);
+			num =1;
+			tokInd += strlen(&tokens[tokInd]) +1; 
+		}
+		
+	}while(tokInd<size);
+
+	
+	free(arg);
+	return 0;
+
+}
+
+
+
 int main(int argc, char** argv) {
     int fd;
 
@@ -61,7 +218,7 @@ int main(int argc, char** argv) {
 		fd = open(argv[1], O_RDONLY);
 		    
 		if (fd == -1) {
-			perror("failed to open file");
+			perror(argv[1]);
 			return EXIT_SUCCESS;
 		}
 	}
@@ -70,7 +227,7 @@ int main(int argc, char** argv) {
     }
 
     char *line, *tokens; 
-    int counter, tokenIndex; 
+    int counter, tokenIndex, numTokens; 
     char str[] = {"mysh> "};
     char buffer[BUFSIZE];
     ssize_t bytes = read(fd, buffer, BUFSIZE - 1);
@@ -120,21 +277,25 @@ int main(int argc, char** argv) {
 		//1b. initailize the new string with the tokens and \0 between each token 
 		tokens[0] = line[0];	
 		tokenIndex=1; 
+		numTokens =0; 
 		for(int i=1; i<strlen(line); i++) {
 			if(line[i] == ' ' && line[i-1] != ' '){
 				tokens[tokenIndex] = '\0'; 
 				tokenIndex++;
+				numTokens++; 
 			}
 			else{
 				if( (line[i] == '<' || line[i] == '>'|| line[i] == '|')  && line[i-1] != ' '){
 					tokens[tokenIndex] = '\0';
 					tokenIndex++; 
+					numTokens++; 
 					tokens[tokenIndex] = line[i]; 
 					tokenIndex++;
 				}
 				else{
 					if((line[i] != '<' && line[i] != '>' && line[i] != '|' && line[i] != ' ') && (line[i-1] == '<' || line[i-1] == '>'|| line[i-1] == '|') ){
 						tokens[tokenIndex] = '\0'; 
+						numTokens++; 
 						tokenIndex++; 
 					}
 					if(line[i] != ' '){	
@@ -146,7 +307,9 @@ int main(int argc, char** argv) {
 			}
 		}
 		tokens[strlen(line)+counter ] = '\0';
-
+		numTokens++; 
+		
+		
 		char c; 
 		//check if the first comand is a built in comand (cd,pwd )
 		if(strcmp( tokens, "cd") == 0){
@@ -155,6 +318,7 @@ int main(int argc, char** argv) {
 					c = '!'; 
 					write(1, &c, 1);
 				}
+				
 			}
 		}
 		else{
@@ -167,42 +331,20 @@ int main(int argc, char** argv) {
 				}
 			}
 			else{
-				// check if the first comand contains a '/'
-				if(strchr(tokens, (int)'/') != NULL ){
-					
-
-				}else{
-					char a[] = "command not found\n"; 
-					write(1, a, strlen(a) ); 
-					if(argc ==1){
-						c = '!'; 
-						write(1, &c, 1);
-					}
-				}
-				// if it does then see if that path exists and can be executed 
-				// if it does not exist then look in the list of directories 
-				// send path and remianing strings to method to execute the program 
-			}
+				// pass the tokens to execute
+				if(execute(tokens, strlen(line) + counter, numTokens ) )
+					write(1, "!", 1);
+			}	
+											
 		}
-
-		//
-		//int n=0; 
-		//while(n<(counter + strlen(line) +1) ){
-			
-		//       n += strlen(&tokens[n])+1; 	
-		//}		
-	  	
-		
-			
-		
-		
-		
+			  	
+				
 
         	line = strtok(NULL, "\n");
         }
 
-        // do something when buffer does not end with new line
-
+        // DO THIS: do something when buffer does not end with new line
+	free(tokens); 
         if (argc == 1) {
             if (write(1, str, strlen(str)) == -1) {
                 perror("Error reading to STDOUT");
