@@ -12,3 +12,7 @@ Implementation:
    to execute the desired commands). To start the process we created a loop to read until the end of file/line (depending on mode). Then we created a 
    buffer and a 'line' variable which holds the command the user wants to exectue. Then we looped through the line tokenizing each key withiin the command
    and extiing if the keyword 'exit' is hit. 
+   
+3) Next in the tokenizing process we had to go through each individaul character of the command-line input in order to check for key characters, things like 
+   "<", ">", "|", and "*". These key characters would warrant their own token and therefore would need to be treated as such and seperated by the null terminator
+   from the other tokens. 
