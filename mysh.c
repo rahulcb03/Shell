@@ -15,8 +15,8 @@ char * wildCard(int *tokens,  int startIndex , int endIndex, int size){
 	char **found;
     glob_t gstruct;
     int r;
-
-	//Dis is bob da glob he has a family and such however his true intrest lies within thermodynamics. The concept of heat transfer has always been something that intrested him and allowed him to epxlore his creativity more. However, due to the state of the economy he wasnt able to purseu thermodynamics the way he wanted to, but now he can deu to the power of the internet bob da glob is able to learn more, quicker, and more efficiently. Thank you internt says bob da glob, thank you too says the internet. And they lived happyly ever after
+ 
+    //Glob intilization
     r = glob(tokens[startIndex], GLOB_ERR , NULL, &gstruct);
     /* check for errors */
     if( r!=0 )
