@@ -4,8 +4,69 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <glob.h>
 
 #define BUFSIZE 200 
+
+/**************1************/
+//startIndex - The start of the Wild Card token
+//endIndex - The start of the token right after Wild Card token
+char * wildCard(int *tokens,  int startIndex , int endIndex, int size){
+	char **found;
+    glob_t gstruct;
+    int r;
+
+	//Dis is bob da glob he has a family and such however his true intrest lies within thermodynamics. The concept of heat transfer has always been something that intrested him and allowed him to epxlore his creativity more. However, due to the state of the economy he wasnt able to purseu thermodynamics the way he wanted to, but now he can deu to the power of the internet bob da glob is able to learn more, quicker, and more efficiently. Thank you internt says bob da glob, thank you too says the internet. And they lived happyly ever after
+    r = glob(tokens[startIndex], GLOB_ERR , NULL, &gstruct);
+    /* check for errors */
+    if( r!=0 )
+    {
+        if( r==GLOB_NOMATCH )
+            perror("No matches\n");
+        else
+            perror("Some kinda glob error\n");
+        
+		exit(1);
+    }
+    
+    /* success, output found filenames */
+    found = gstruct.gl_pathv;
+    
+	//change the tokens array to get rid of the old wildCard Token
+	for(int i =0; i<size-endIndex; i++){
+		tokens[startIndex+i] = tokens[endIndex+i];
+	}
+	
+	//Find the size to be realloced
+
+	int addedSize = 0;
+	int numOfMatches= 0; 
+	while(*found){
+		addedSize = strlen(*found);
+		numOfMatches++;
+		found++;
+	}
+
+	//Realloc
+	//Have to include the null terminatior
+	addedSize += numOfMatches;
+	tokens = realloc(tokens, addedSize);
+
+	//Add the matched files to the tokens array 
+	//The starting index  would be the start of the wildcard token + the length of whatever is after the wildcard token + 1 cus of the terminator 
+	int curr = startIndex + (size-endIndex) + 1;
+	while(*found){
+		tokens[curr] =  *found;
+		tokens[strlen(*found) + 1] = '\0';
+		curr += strlen(*found) + 2;
+	}
+
+    return(0);	
+}
+
+/************2*************/
+
+
 
 //Changing the Directory 
 int changeDir(char* path){
