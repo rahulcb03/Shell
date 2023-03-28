@@ -4,44 +4,48 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <dirent.h>
 
-#define BUFSIZE 100
+#define BUFSIZE 200 
 
 //Changing the Directory 
 int changeDir(char* path){
 	
+	
 	//Error if change directory doesn't work  :(
-	if(chdir(path)!=0){
-		perror(path);
-		return 1;
-	}
+	if(path == NULL || strcmp(path, "~") == 0 ){
+		path = getenv("HOME"); 
+		if(chdir(path)!=0){
+			perror(path);
+			return 1;
+		}
+	}else{
+		if(path[0] == '~'){
+			char *home = getenv("HOME"); 
+			int n = strlen(home); 
+			char *p = (char *) malloc(sizeof(char) * (strlen(path) + n ) ); 
+			
+			int i=0, x=0; 
+			for( i=0; i<n; i++){p[i] = home[i];  }
+			for( x=1; x<strlen(path); x++){ p[i+x-1] = path[x]; }
 
-	//If Everything goes as planned return success muahahahahahha
+			p[x+i-1] = '\0'; 
+			
+			if(chdir(p)!=0){
+				perror(path);
+				free(p);
+				return 1;
+			}
+			free(p); 
+		}else{
+			if(chdir(path)!=0){
+				perror(path);
+				return 1;
+			}
+		}
+	}
 	return 0; 
 }
 
-//Printing the Current Directory
-int printCurrDir(){
-	//Get all the paths in the current directory
-	char *buffer = getcwd(NULL, 0);
-
-	//Checking to see if there was an error with getcwd
-	if(buffer == NULL){
-		perror("Error getting current working directory"); 
-		return 1;
-	}
-
-	//Writing to the stdout and checking if theres any issues with the writing
-	write(1, buffer, strlen(buffer));
-	char c='\n'; 
-	write(1, &c, 1); 
-			
-	//Free buffer and return success
-	free(buffer);
-	return 0;
-
-}
 
 //takes in a bare name and should return path to that executable or NULL if not found
 //if it doesnt return NULL than the return value must be freed
@@ -84,7 +88,7 @@ int execute(char *tokens, int size, int nTok){
 	int tokInd=0 ; //used to index throuhgh tokens
        	int num=0; //keeps track of the iterations
 	int fds[2]; //pipe FD
-	int isBare; //indicates if the path is a Bare name and that it must be freed 
+	int pathType; //indicates if the path is a Bare name and that it must be freed 
 	
 	//check if pipe failed
 	if(pipe(fds) == -1){
@@ -92,25 +96,35 @@ int execute(char *tokens, int size, int nTok){
 		return 1;
 	}
 
-	do{
+	do{			
 		input= NULL;
 		output= NULL;
-		isBare =0; 
+		pathType =0; 
 
-		//check if the exectuable is a bare name 
-		if(strchr(&tokens[tokInd], (int)'/') == NULL){
-			path = findBare(&tokens[tokInd]) ; 
-			
-			//if findBare returns NULL than it was not found
-			if(path == NULL){
-				char *c = {"Executable is Invalid\n"}; 
-				write(1,c , strlen(c) ); 
-				return 1; 
-			}else{isBare =1; }
+		if(strcmp( &tokens[tokInd], "cd") == 0){
+			pathType = 1; 
 		}else{
-			path = &tokens[tokInd]; 
-		}	
-	
+			if(strcmp( &tokens[tokInd], "cd") == 0){
+				pathType = 2;
+			}else{ 
+				//check if the exectuable is a bare name 
+				if(strchr(&tokens[tokInd], (int)'/') == NULL){
+					path = findBare(&tokens[tokInd]) ; 
+					
+					//if findBare returns NULL than it was not found
+					if(path == NULL){
+						char *c = {"Executable is Invalid\n"}; 
+						write(1,c , strlen(c) ); 
+						return 1; 
+					}else{pathType =3; }
+				}else{
+					path = &tokens[tokInd]; 
+					pathType = 4; 
+				}	
+
+			}
+		}
+			
 		//build the argument list 
 		char *prevTok  = &tokens[tokInd]; 
 		arg[0] = &tokens[tokInd]; 
@@ -139,80 +153,126 @@ int execute(char *tokens, int size, int nTok){
 		}
 		arg[argInd] = NULL; 
 		
-		//use fork to create child proccess
-		int pid = fork();
-
-		if(pid ==-1) {
-			perror("fork"); 
-			return 1;
-	       	}
-
-		if( pid ==0){
-		//currently in child process
-			//check if the input and output is set and if so open the file and redirect 
-			if( input != NULL) {
-				int inFD = open(input, O_RDONLY );
-				if(inFD == -1) {
-					perror(input);
-					exit(1); 
-				}
-				if(dup2(inFD , STDIN_FILENO) == -1){
-					perror( "dup2"); 
-					exit(1); 
-				}
-				close(inFD);
-			}
-			if(output != NULL){
-				int outFD = open(output, O_WRONLY|O_CREAT|O_TRUNC, 0640 );
-				if( outFD == -1 ){
-					perror(output);
-					exit(1); 
-				}
-				if(dup2(outFD , STDOUT_FILENO) == -1){
-					perror( "dup2");
-					exit(1); 
-				}
-				close(outFD);
-			}
-			
-			//check if there is a pipe and redirect using pipe
-			if(tokInd<size && strcmp(&tokens[tokInd] , "|") ==0 && num ==0 ) {
-				
-				if(dup2(fds[1], STDOUT_FILENO) == -1){
-					perror("pipe"); 
-					exit(1);	
-				}			
-			}
-
-			//if this is the second iteration than there was a pipe so set the input to the pipe fds
-			if(num ==1){
-				if(dup2(fds[0], STDIN_FILENO) == -1){
-					perror("pipe"); 
-					exit(1);	
-				}		
-			}
-
-			//excute the executable with the arguments given by the command 
-			execv(path,arg ); 
-
-			//if here than there was an error executing 
-			perror(path); 
-			exit(1);
-		
-		}
-		if(isBare){free(path);}
-
-		//wait for the child proccess and get the exit status
-		int status;
-		wait(&status);
-
-		//if the child proccess exits failure than return 1
-		if(WIFEXITED(status) ){
-			if(WEXITSTATUS(status) == 1){
+		if(pathType ==1){
+			if(changeDir(arg[1])) {
 				return 1; 
 			}
+			if(tokInd<size){
+				write(fds[0], "0", 1); 
+			}else{
+				if(output != NULL){
+					int f =  open(output, O_WRONLY|O_CREAT|O_TRUNC, 0640 );
+					if(f == -1){ 
+						perror(output); 
+						return 1; 
+					}
+					write(f, "0", 1); 
+					close (f); 
+				}
+			}
 		}
+		if(pathType==2){
+			char *cwd = getcwd(NULL, 0) ;
+
+			if(cwd == NULL){
+				perror("Error"); 
+				return 1; 
+			}	
+
+			if(tokInd < size){
+				write(fds[0] , cwd, strlen(cwd) );
+			}else{
+				if(output != NULL){
+					int d = open(output, O_WRONLY|O_CREAT|O_TRUNC, 0640 );
+					if(d==-1){
+						perror(output); 
+						return 1; 
+					}
+					write(d, cwd, strlen(cwd) ); 
+					close(d); 
+				}else{
+					write(1, cwd, strlen(cwd) ); 
+				}
+			}
+			free(cwd); 
+		}
+
+		if(pathType == 3 || pathType ==4){
+			//use fork to create child proccess
+			int pid = fork();
+
+			if(pid ==-1) {
+				perror("fork"); 
+				return 1;
+	    	   	}
+
+			if( pid ==0){
+				//currently in child process
+				//check if the input and output is set and if so open the file and redirect 
+				if( input != NULL) {
+					int inFD = open(input, O_RDONLY );
+					if(inFD == -1) {
+						perror(input);
+						exit(1); 
+					}
+					if(dup2(inFD , STDIN_FILENO) == -1){
+						perror( "dup2"); 
+						exit(1); 
+					}
+					close(inFD);
+				}
+				if(output != NULL){
+					int outFD = open(output, O_WRONLY|O_CREAT|O_TRUNC, 0640 );
+					if( outFD == -1 ){
+						perror(output);
+						exit(1); 
+					}
+					if(dup2(outFD , STDOUT_FILENO) == -1){
+						perror( "dup2");
+						exit(1); 
+					}
+					close(outFD);
+				}
+			
+				//check if there is a pipe and redirect using pipe
+				if(tokInd<size && strcmp(&tokens[tokInd] , "|") ==0 && num ==0 ) {
+				
+					if(dup2(fds[1], STDOUT_FILENO) == -1){
+						perror("pipe"); 
+						exit(1);	
+					}			
+				}
+
+				//if this is the second iteration than there was a pipe so set the input to the pipe fds
+				if(num ==1){
+					if(dup2(fds[0], STDIN_FILENO) == -1){
+						perror("pipe"); 
+						exit(1);	
+					}		
+				}
+	
+				//excute the executable with the arguments given by the command 
+				execv(path,arg ); 
+	
+				//if here than there was an error executing 
+				perror(path); 
+				exit(1);
 		
+			}
+			if(pathType == 3){free(path);}
+
+			//wait for the child proccess and get the exit status
+			int status;
+			wait(&status);
+
+			//if the child proccess exits failure than return 1
+			if(WIFEXITED(status) ){
+				if(WEXITSTATUS(status) == 1){
+					return 1; 
+				}
+			}
+		
+		}
 		//close the input end of the pipe
 		if(num ==1){close(fds[0]);}
 
@@ -222,16 +282,11 @@ int execute(char *tokens, int size, int nTok){
 			num =1;
 			tokInd += strlen(&tokens[tokInd]) +1; 
 		}
-		
 	}while(tokInd<size);
-
 	
 	free(arg);
 	return 0;
-
 }
-
-
 
 int main(int argc, char** argv) {
     int fd;
@@ -261,14 +316,17 @@ int main(int argc, char** argv) {
 
     }
 
-    char *line, *tokens; 
-    int counter, tokenIndex, numTokens; 
+    char *line, *tokens, *prevLine;
+    int counter, tokenIndex, numTokens, newL=0; 
     char str[] = {"mysh> "};
     char buffer[BUFSIZE];
+   
+   
     ssize_t bytes = read(fd, buffer, BUFSIZE - 1);
 
     // read in the bytes until end of file
     while (bytes != 0) {
+	if(buffer[bytes-1] != '\n'){newL =1;}
 	// add \0 to the end so we can use strtok( ) to split the buffer into serpatelines
         buffer[bytes] = '\0';
         line = strtok(buffer, "\n");
@@ -290,30 +348,47 @@ int main(int argc, char** argv) {
 	    
 		//1. split each line into to tokens, each token is either '>', '<', '|', or chars seperated by spaces
 		//plan: create new String that holds the tokens, the tokens will be seperated by \0 so they can be used as spereate strings
-			
 		counter =0; 
+		
 		//1a. find how many additional spaces are needed to include \0 for each token
+		if(line[0] == ' ') { counter --; }
+				
 		for(int x=1; x<strlen(line); x++){
+			
+
 			//check if there are multiple spaces
-			if(line[x] == ' ' && line[x-1] == ' ') 
+			if(line[x] == ' ' && line[x-1] == ' ' ) 
 				counter --; 
 			//check if curr char is a token and if last char is a token
-			if( (line[x] == '<' || line[x] == '>'|| line[x] == '|')  && (line[x-1] != '<' &&  line[x-1] != '>' && line[x-1] != '|' && line[x-1] != ' '))
+			if( (line[x] == '<' || line[x] == '>'|| line[x] == '|')  && line[x-1] != ' ' )
 				counter ++; 		
 			
 			//check if curr char is not a token but the last char was a token
 		       	if((line[x] != '<' && line[x] != '>' && line[x] != '|' && line[x] != ' ') && (line[x-1] == '<' || line[x-1] == '>'|| line[x-1] == '|') )	
 				counter++;
+
 		}		
 		
 		//using the counter in the above for loop, malloc an string that can hold each token so that it can be seperated by '\0'
 		tokens = (char *)malloc(sizeof(char) * (strlen(line) +counter+1) ); 
 
 		//1b. initailize the new string with the tokens and \0 between each token 
-		tokens[0] = line[0];	
+		
 		tokenIndex=1; 
-		numTokens =0; 
+		numTokens =0;
+		
+		if(tokens[0] == ' ') {
+			tokenIndex++;
+		}else{tokens[0] = line[0]; }
+
 		for(int i=1; i<strlen(line); i++) {
+
+		
+			if(line[i] == '*'){
+				//if(wCard(tokens, i)){
+					write(1, "!", 1); 
+				//}
+			}
 			if(line[i] == ' ' && line[i-1] != ' '){
 				tokens[tokenIndex] = '\0'; 
 				tokenIndex++;
@@ -333,48 +408,40 @@ int main(int argc, char** argv) {
 						numTokens++; 
 						tokenIndex++; 
 					}
+
 					if(line[i] != ' '){	
 						tokens[tokenIndex] = line[i] ;
 						tokenIndex++; 
 					}
-					
 				}
 			}
 		}
 		tokens[strlen(line)+counter ] = '\0';
 		numTokens++; 
-		
-		char c; 
-		//check if the first comand is a built in comand (cd,pwd )
-		if(strcmp( tokens, "cd") == 0){
-			if(changeDir(&tokens[3]) ){
-				if(argc == 1){
-					c = '!'; 
-					write(1, &c, 1);
-				}
-			}
-		}
-		else{
-			if(strcmp(tokens, "pwd") ==0){
-				if(printCurrDir( ) ){
-					if(argc == 1){
-						c = '!'; 
-						write(1, &c, 1);
-					}
-				}
-			}
-			else{
-				// pass the tokens to execute
-				if(execute(tokens, strlen(line) + counter, numTokens ) )
-					write(1, "!", 1);
-			}										
-		}			
 
-        	line = strtok(NULL, "\n");
+		
+		// pass the tokens to execute
+		if(execute(tokens, strlen(line) + counter, numTokens ) )
+			if( argc== 1)
+				write(1, "!", 1);
+						
+		prevLine = line; 
+		line = strtok(NULL, "\n");
+		
+		free(tokens); 
         }
 
+	//if the buffer dosent end on a newline than use lseek to reset to the previous line so the buffer can read the complete line
+	if(newL){
+		if(lseek(fd,(-1) * strlen(prevLine), SEEK_CUR) == -1){
+			perror("lseek"); 
+			return EXIT_FAILURE; ; 
+		}
+		newL = 0; 
+	}
+
         // DO THIS: do something when buffer does not end with new line
-	free(tokens); 
+	
         if (argc == 1) {
             if (write(1, str, strlen(str)) == -1) {
                 perror("Error reading to STDOUT");
@@ -385,155 +452,4 @@ int main(int argc, char** argv) {
     }
     return EXIT_SUCCESS;
 }
-
-/**************   11  1 *************/
-char * wCard(char *tokens, int astrikIndex){
-    //Used to find and record the prefixs and suffixs
-	int prefixLength = 0, suffixLength = 0; 
-	
-	//Find the length of the prefix
-	int curr = astrikIndex; 
-	int dirChange = 0;
-	while(tokens[curr]!='\0'){
-		if(tokens[curr] == '/'){
-			dirChange = 1;
-			curr--;
-			break;
-		}
-		prefixLength ++; 
-		curr--; 
-	}
-
-	int pathLength=0;
-	//Get the directory if there is a path provided
-	char *newDir;
-	if(dirChange ==1){
-		while(tokens[curr]!='\0'){
-			pathLength ++; 
-			curr--;
-		}
-		newDir = malloc(sizeof(char) * pathLength);
-		for(int i=0; i<pathLength; i++){
-			newDir[i] = tokens[curr + i];
-		}
-	}
-
-	//Find the length of the suffix
-	curr = astrikIndex; 
-	while(tokens[curr]!='\0'){
-		suffixLength ++; 
-		curr++;
-	}
-
-	//Allocate memory to the prefix and suffix char arrays + 1
-	char *prefix = malloc(sizeof(char) * prefixLength + 1);
-	char *suffix = malloc(sizeof(char) * suffixLength + 1);
-
-	//Fill in the appropriate arrays with their respeocive values
-	for(int i=0; i<prefixLength; i++){
-		prefix[i] = tokens[astrikIndex - prefixLength + i];
-	}
-	for(int i=0; i<suffixLength; i++){
-		suffix[i] = tokens[astrikIndex + i];
-	}
-
-	//Open dir and compare the start of the file and end of file with the subsequent arrays 
-	DIR *dir;
-	if(dirChange == 1){
-		dir = opendir(newDir);
-	}
-	else{
-		dir = opendir(".");
-	}
-	struct dirent *fName; 
-
-	
-	 // Count the number of characters in each filename
-    int Max_Filename_chars = 0;
-    int Max_File_count = 0;
-    while((fName = readdir(dir))!=NULL){
-        if(fName->d_type == DT_DIR){
-            continue;
-        }
-        int file_name_chars = strlen(fName->d_name);
-        if (file_name_chars > Max_Filename_chars) {
-            Max_Filename_chars = file_name_chars;
-        }
-        Max_File_count++;
-    }
-
-    // Allocate memory to the matchedFiles char array
-    char *matchedFiles = malloc(sizeof(char) * (Max_Filename_chars * Max_File_count + 1));
-    int matchedIndex = 0;
-
-    // Reset the directory pointer
-    rewinddir(dir);
-
-    //Compare the start of the file and end of file with the subsequent arrays
-    while((fName = readdir(dir))!=NULL){
-        if(fName->d_type == DT_DIR){
-            continue;
-        }
-        char *name = fName->d_name;
-        int nameLen = strlen(name);
-        if(nameLen < prefixLength + suffixLength){
-            continue;
-        }
-        int check = 0;
-
-        //Compare Prefixes
-        for(int i=0; i<prefixLength; i++){
-            if(prefix[i]!=name[i]){
-                check = 1;
-                break;
-            }
-        }
-
-        //Compare Suffixes
-        for(int i=0; i<suffixLength; i++){
-            if(suffix[i]!=name[nameLen-suffixLength+i]){
-                check = 1;
-                break;
-            }
-        }
-
-        //If both Prefix and Suffix match, add the file name to matchedFiles array
-        if(check == 0){
-            for (int i = 0; i < nameLen; i++) {
-                matchedFiles[matchedIndex] = name[i];
-                matchedIndex++;
-            }
-            matchedFiles[matchedIndex] = '\0'; // Add null terminator
-        }
-    }
-	
-	//Malloc a newTokens array which has the length of the original tokens array + the length of the matchedFiles array up till the last null terminator - (prefix + suffix + 2(the astrik itself and one of the null terminators)))
-	int tokensSize = sizeof(tokens);
-	int  matchedFilesSize = sizeof(matchedFiles);
-	char *newTokens = malloc(sizeof(char) * (tokensSize + matchedFilesSize - (prefixLength + suffixLength +2)));
-
-	//Add in the values before the token with the astrik 
-	for(int i = 0; i < astrikIndex - prefixLength; i++){
-    	newTokens[i] = tokens[i];
-	}
-	int endOfOriginal = astrikIndex-prefixLength;
-	//Add in the new matched files 
-	for(int i = endOfOriginal; i < matchedFilesSize; i++){
-    	newTokens[i] = matchedFiles[i];
-	}
-	//Add in the rest of the tokens from the original tokens array 
-	int continueOriginal = endOfOriginal + matchedFilesSize;
-	int i=0; 
-	while(continueOriginal != tokensSize){
-		newTokens[continueOriginal] = tokens[astrikIndex + suffixLength + 2 + i];
-		i++;
-		continueOriginal++;
-	}
-
-	return newTokens;
-
-}
-
-/*************   2   *************/
-
 
