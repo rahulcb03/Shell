@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 #define BUFSIZE 100
 
@@ -384,4 +385,155 @@ int main(int argc, char** argv) {
     }
     return EXIT_SUCCESS;
 }
+
+/**************   11  1 *************/
+char * wCard(char *tokens, int astrikIndex){
+    //Used to find and record the prefixs and suffixs
+	int prefixLength = 0, suffixLength = 0; 
+	
+	//Find the length of the prefix
+	int curr = astrikIndex; 
+	int dirChange = 0;
+	while(tokens[curr]!='\0'){
+		if(tokens[curr] == '/'){
+			dirChange = 1;
+			curr--;
+			break;
+		}
+		prefixLength ++; 
+		curr--; 
+	}
+
+	int pathLength=0;
+	//Get the directory if there is a path provided
+	char *newDir;
+	if(dirChange ==1){
+		while(tokens[curr]!='\0'){
+			pathLength ++; 
+			curr--;
+		}
+		newDir = malloc(sizeof(char) * pathLength);
+		for(int i=0; i<pathLength; i++){
+			newDir[i] = tokens[curr + i];
+		}
+	}
+
+	//Find the length of the suffix
+	curr = astrikIndex; 
+	while(tokens[curr]!='\0'){
+		suffixLength ++; 
+		curr++;
+	}
+
+	//Allocate memory to the prefix and suffix char arrays + 1
+	char *prefix = malloc(sizeof(char) * prefixLength + 1);
+	char *suffix = malloc(sizeof(char) * suffixLength + 1);
+
+	//Fill in the appropriate arrays with their respeocive values
+	for(int i=0; i<prefixLength; i++){
+		prefix[i] = tokens[astrikIndex - prefixLength + i];
+	}
+	for(int i=0; i<suffixLength; i++){
+		suffix[i] = tokens[astrikIndex + i];
+	}
+
+	//Open dir and compare the start of the file and end of file with the subsequent arrays 
+	DIR *dir;
+	if(dirChange == 1){
+		dir = opendir(newDir);
+	}
+	else{
+		dir = opendir(".");
+	}
+	struct dirent *fName; 
+
+	
+	 // Count the number of characters in each filename
+    int Max_Filename_chars = 0;
+    int Max_File_count = 0;
+    while((fName = readdir(dir))!=NULL){
+        if(fName->d_type == DT_DIR){
+            continue;
+        }
+        int file_name_chars = strlen(fName->d_name);
+        if (file_name_chars > Max_Filename_chars) {
+            Max_Filename_chars = file_name_chars;
+        }
+        Max_File_count++;
+    }
+
+    // Allocate memory to the matchedFiles char array
+    char *matchedFiles = malloc(sizeof(char) * (Max_Filename_chars * Max_File_count + 1));
+    int matchedIndex = 0;
+
+    // Reset the directory pointer
+    rewinddir(dir);
+
+    //Compare the start of the file and end of file with the subsequent arrays
+    while((fName = readdir(dir))!=NULL){
+        if(fName->d_type == DT_DIR){
+            continue;
+        }
+        char *name = fName->d_name;
+        int nameLen = strlen(name);
+        if(nameLen < prefixLength + suffixLength){
+            continue;
+        }
+        int check = 0;
+
+        //Compare Prefixes
+        for(int i=0; i<prefixLength; i++){
+            if(prefix[i]!=name[i]){
+                check = 1;
+                break;
+            }
+        }
+
+        //Compare Suffixes
+        for(int i=0; i<suffixLength; i++){
+            if(suffix[i]!=name[nameLen-suffixLength+i]){
+                check = 1;
+                break;
+            }
+        }
+
+        //If both Prefix and Suffix match, add the file name to matchedFiles array
+        if(check == 0){
+            for (int i = 0; i < nameLen; i++) {
+                matchedFiles[matchedIndex] = name[i];
+                matchedIndex++;
+            }
+            matchedFiles[matchedIndex] = '\0'; // Add null terminator
+        }
+    }
+	
+	//Malloc a newTokens array which has the length of the original tokens array + the length of the matchedFiles array up till the last null terminator - (prefix + suffix + 2(the astrik itself and one of the null terminators)))
+	int tokensSize = sizeof(tokens);
+	int  matchedFilesSize = sizeof(matchedFiles);
+	char *newTokens = malloc(sizeof(char) * (tokensSize + matchedFilesSize - (prefixLength + suffixLength +2)));
+
+	//Add in the values before the token with the astrik 
+	for(int i = 0; i < astrikIndex - prefixLength; i++){
+    	newTokens[i] = tokens[i];
+	}
+	int endOfOriginal = astrikIndex-prefixLength;
+	//Add in the new matched files 
+	for(int i = endOfOriginal; i < matchedFilesSize; i++){
+    	newTokens[i] = matchedFiles[i];
+	}
+	//Add in the rest of the tokens from the original tokens array 
+	int continueOriginal = endOfOriginal + matchedFilesSize;
+	int i=0; 
+	while(continueOriginal != tokensSize){
+		newTokens[continueOriginal] = tokens[astrikIndex + suffixLength + 2 + i];
+		i++;
+		continueOriginal++;
+	}
+
+	return newTokens;
+
+}
+
+/*************   2   *************/
+
 
