@@ -1,0 +1,4 @@
+Testing: mysh.c
+Bash Mode:
+
+Interactive Mode:
