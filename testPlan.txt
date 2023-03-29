@@ -10,7 +10,7 @@ Batch Mode:
                                                          pwd"
           Ran the command "./mysh testbatch.txt"
           Expected output: Prints "Hello World" in the command line, then lists all the content in current directory, 
-          makes a directory called "testdir", changes director to "testdir", prints content of "testdir"
+          makes a directory called "testdir", changes director to "testdir", prints content of "/testdir"
 
 Interactive Mode: 
 1) bare / ">" - Testing Redirection of output along with the bare function "ls"
