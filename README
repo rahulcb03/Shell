@@ -18,7 +18,10 @@ Implementation:
 3) Next in the tokenizing process we had to go through each individaul character of the command-line input in order to check for key characters, things like 
    "<", ">", "|", and "*". These key characters would warrant their own token and therefore would need to be treated as such and seperated by the null terminator
    from the other tokens, which if they are characters are split by the sepcial tokens described above. 
-   
+
+4) During the tokeniziation process, if there is an astrick "*" then the program will call the wildCard function. The wildCard() function will then alter the tokens array
+   to account for the wild card files that are being requested, and then return the updated tokens array. 
+
 5) During the process of tokenizing the tokens are sent to an execute() function in the program which will handle the actual processes that the user wants to do.
    If the user input is longer then one line, lseek() will flush the buffer and then read from the next line in order to continue reading user input. 
    
@@ -29,4 +32,11 @@ Implementation:
 7) The first flag that is set is for the "change directory" functionality. This flag when activated will call the changeDir() function which will change the current directory to 
    a specified directory passed in. 
 
-8) The second flag that is set is for the "print current directory
+8) The second flag that is set is for the "print working directory" functionality. This flag when activited will print all the contents(file names, directories, etc.) of the current
+   directory. 
+   
+9) The third flag that is set is for the 
+
+10) The fourth flag that is set is for the 
+
+11) The fifth flag that is set is for the 
