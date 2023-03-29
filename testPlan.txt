@@ -47,3 +47,11 @@ EXIT - Testing if the exit key word exits program
 Test: 
  
 Edge Cases: 
+* - Testing if the program works if the wildCard is the last token 
+Test: 
+
+> - Testing if the redirection can occur anywhere in the program 
+Test: 
+
+|, >, < - Random Combintaion of redirections and pipes to confirm functionality
+Test: 
