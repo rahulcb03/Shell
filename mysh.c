@@ -5,19 +5,19 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <glob.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define BUFSIZE 200 
 
-/**************1************/
-//startIndex - The start of the Wild Card token
 char * wildCard(char *tokens,  int startIndex ,  int size){
     char **found;
     glob_t gstruct;
     int r;
-	
-	//endIndex - The start of the token right after the Wild card toekn 
+
+	//endIndex - The start of the token right after the Wild card toekn
 	int endIndex = strlen(&tokens[startIndex]) + startIndex + 1;
-	
+
     //Glob INtialzier
     r = glob(&tokens[startIndex], GLOB_ERR , NULL, &gstruct);
     /* check for errors */
@@ -27,14 +27,14 @@ char * wildCard(char *tokens,  int startIndex ,  int size){
             perror("No matches\n");
         else
             perror("Some kinda glob error\n");
-        
+
 		exit(1);
     }
-    
+
     /* success, output found filenames */
     found = gstruct.gl_pathv;
-    
-	//Edge Case where the wild card token is the last token 
+
+	//Edge Case where the wild card token is the last token
 	int sizeOfWildCard = strlen(&tokens[startIndex]);
 	if(endIndex > size){
 		for(int i=0; i<sizeOfWildCard + 1; i++){
@@ -51,13 +51,13 @@ char * wildCard(char *tokens,  int startIndex ,  int size){
 	//Find the size to be realloced
 
 	int addedSize = 0;
-	int numOfMatches= 0; 
+	int numOfMatches= 0;
 	while(*found){
 		addedSize = strlen(*found);
 		numOfMatches++;
 		found++;
 	}
-	
+
 	//Account for the size of the wildcard that is being deleted
 	addedSize -= sizeOfWildCard;
 	//Realloc
@@ -65,8 +65,8 @@ char * wildCard(char *tokens,  int startIndex ,  int size){
 	addedSize += numOfMatches;
 	tokens = realloc(tokens, addedSize);
 
-	//Add the matched files to the tokens array 
-	//The starting index  would be the start of the wildcard token + the length of whatever is after the wildcard token + 1 cus of the terminator 
+	//Add the matched files to the tokens array
+	//The starting index  would be the start of the wildcard token + the length of whatever is after the wildcard token + 1 cus of the terminator
 	int curr = startIndex + (size-endIndex) + 1;
 	while(*found){
 		int i=0;
@@ -77,16 +77,11 @@ char * wildCard(char *tokens,  int startIndex ,  int size){
 		tokens[strlen(*found) + 1] = '\0';
 		curr += strlen(*found) + 2;
 	}
-	
+
 	globfree(&gstruct);
 
-    return(0);	
+    return(0);
 }
-
-/************2*************/
-
-
-
 
 //Changing the Directory 
 int changeDir(char* path){
@@ -170,6 +165,7 @@ int execute(char *tokens, int size, int nTok){
        	int num=0; //keeps track of the iterations
 	int fds[2]; //pipe FD
 	int pathType; //indicates if the path is a Bare name and that it must be freed 
+	int doExit =0; 
 	
 	//check if pipe failed
 	if(pipe(fds) == -1){
@@ -185,23 +181,28 @@ int execute(char *tokens, int size, int nTok){
 		if(strcmp( &tokens[tokInd], "cd") == 0){
 			pathType = 1; 
 		}else{
-			if(strcmp( &tokens[tokInd], "cd") == 0){
+			if(strcmp( &tokens[tokInd], "pwd") == 0){
 				pathType = 2;
 			}else{ 
+				if(strcmp(&tokens[tokInd], "exit") ==0){
+					pathType=5;
+				}else{
 				//check if the exectuable is a bare name 
-				if(strchr(&tokens[tokInd], (int)'/') == NULL){
-					path = findBare(&tokens[tokInd]) ; 
+					if(strchr(&tokens[tokInd], (int)'/') == NULL){
+						path = findBare(&tokens[tokInd]) ; 
 					
 					//if findBare returns NULL than it was not found
-					if(path == NULL){
-						char *c = {"Executable is Invalid\n"}; 
-						write(1,c , strlen(c) ); 
-						return 1; 
-					}else{pathType =3; }
-				}else{
-					path = &tokens[tokInd]; 
-					pathType = 4; 
-				}	
+						if(path == NULL){
+							char *c = {"Executable is Invalid\n"}; 
+							write(1,c , strlen(c) ); 
+							free(arg);
+							return 1; 
+						}else{pathType =3; }
+					}else{
+						path = &tokens[tokInd]; 
+						pathType = 4; 
+					}	
+				}
 
 			}
 		}
@@ -236,18 +237,21 @@ int execute(char *tokens, int size, int nTok){
 		
 		if(pathType ==1){
 			if(changeDir(arg[1])) {
+				free(arg);
 				return 1; 
 			}
 			if(tokInd<size){
-				write(fds[0], "0", 1); 
+				write(fds[1], "0", 1); 
 			}else{
 				if(output != NULL){
 					int f =  open(output, O_WRONLY|O_CREAT|O_TRUNC, 0640 );
 					if(f == -1){ 
 						perror(output); 
+						free(arg);
 						return 1; 
 					}
-					write(f, "0", 1); 
+					write(f, "0\n", 2); 
+
 					close (f); 
 				}
 			}
@@ -257,22 +261,26 @@ int execute(char *tokens, int size, int nTok){
 
 			if(cwd == NULL){
 				perror("Error"); 
+				free(arg);
 				return 1; 
 			}	
 
-			if(tokInd < size){
-				write(fds[0] , cwd, strlen(cwd) );
+			if(tokInd < size){			
+				write(fds[1] , cwd, strlen(cwd) );
 			}else{
 				if(output != NULL){
 					int d = open(output, O_WRONLY|O_CREAT|O_TRUNC, 0640 );
 					if(d==-1){
 						perror(output); 
+						free(arg);
 						return 1; 
 					}
 					write(d, cwd, strlen(cwd) ); 
+					write(d, "\n", 1); 
 					close(d); 
 				}else{
 					write(1, cwd, strlen(cwd) ); 
+					write(1, "\n", 1); 
 				}
 			}
 			free(cwd); 
@@ -284,6 +292,7 @@ int execute(char *tokens, int size, int nTok){
 
 			if(pid ==-1) {
 				perror("fork"); 
+				free(arg);
 				return 1;
 	    	   	}
 
@@ -349,13 +358,22 @@ int execute(char *tokens, int size, int nTok){
 			//if the child proccess exits failure than return 1
 			if(WIFEXITED(status) ){
 				if(WEXITSTATUS(status) == 1){
+					free(arg);
 					return 1; 
 				}
 			}
 		
 		}
+		if(pathType == 5){
+			if(tokInd<size){
+				write(fds[1], "0", 1);
+			}
+			doExit =1;
+		}
+
 		//close the input end of the pipe
 		if(num ==1){close(fds[0]);}
+		
 
 		//close output end of the pipe and iterate over the '|'
 		if(tokInd<size){
@@ -364,6 +382,15 @@ int execute(char *tokens, int size, int nTok){
 			tokInd += strlen(&tokens[tokInd]) +1; 
 		}
 	}while(tokInd<size);
+
+	if(pathType == 4 && output == NULL ){
+		write(1,"\n", 1); 
+	}
+
+	if(doExit ==1){
+		free(arg);
+		return -1; 
+	}
 	
 	free(arg);
 	return 0;
@@ -401,40 +428,29 @@ int main(int argc, char** argv) {
     int counter, tokenIndex, numTokens, newL=0; 
     char str[] = {"mysh> "};
     char buffer[BUFSIZE];
+    int errorFlag; 
    
    
     ssize_t bytes = read(fd, buffer, BUFSIZE - 1);
 
     // read in the bytes until end of file
     while (bytes != 0) {
-	if(buffer[bytes-1] != '\n'){newL =1;}
+		if(buffer[bytes-1] != '\n'){newL =1;}
 	// add \0 to the end so we can use strtok( ) to split the buffer into serpatelines
         buffer[bytes] = '\0';
         line = strtok(buffer, "\n");
 	
 	//traverse through the lines in the buffer
         while (line !=  NULL) {
-			
-            	// Checking if the user wants to exit
-		if (strcmp(line, "exit") == 0) {
-               		char exit_message[] = {"mysh: exiting\n"};
-
-			//Checking to see if writing to the commmand line was successful
-               		 if (write(1, exit_message, strlen(exit_message)) == -1) {
-               			 perror("Error writing to STDOUT");
-		     		 return EXIT_FAILURE;
-               		 }
-               		 return EXIT_SUCCESS;
-            	}
-	    
+			          
 		//1. split each line into to tokens, each token is either '>', '<', '|', or chars seperated by spaces
 		//plan: create new String that holds the tokens, the tokens will be seperated by \0 so they can be used as spereate strings
-		counter =0; 
+			counter =0; 
 		
 		//1a. find how many additional spaces are needed to include \0 for each token
-		if(line[0] == ' ') { counter --; }
+			if(line[0] == ' ') { counter --; }
 				
-		for(int x=1; x<strlen(line); x++){
+			for(int x=1; x<strlen(line); x++){
 			
 
 			//check if there are multiple spaces
@@ -448,89 +464,106 @@ int main(int argc, char** argv) {
 		       	if((line[x] != '<' && line[x] != '>' && line[x] != '|' && line[x] != ' ') && (line[x-1] == '<' || line[x-1] == '>'|| line[x-1] == '|') )	
 				counter++;
 
-		}		
+			}		
 		
 		//using the counter in the above for loop, malloc an string that can hold each token so that it can be seperated by '\0'
-		tokens = (char *)malloc(sizeof(char) * (strlen(line) +counter+1) ); 
+			tokens = (char *)malloc(sizeof(char) * (strlen(line) +counter+1) ); 
 
 		//1b. initailize the new string with the tokens and \0 between each token 
 		
-		tokenIndex=1; 
-		numTokens =0;
+			tokenIndex=1; 
+			numTokens =0;
 		
-		if(tokens[0] == ' ') {
-			tokenIndex++;
-		}else{tokens[0] = line[0]; }
-
-		for(int i=1; i<strlen(line); i++) {
-
-		
-			if(line[i] == '*'){
-				//if(wCard(tokens, i)){
-					write(1, "!", 1); 
-				//}
-			}
-			if(line[i] == ' ' && line[i-1] != ' '){
-				tokens[tokenIndex] = '\0'; 
+			if(tokens[0] == ' ') {
 				tokenIndex++;
-				numTokens++; 
-			}
-			else{
-				if( (line[i] == '<' || line[i] == '>'|| line[i] == '|')  && line[i-1] != ' '){
-					tokens[tokenIndex] = '\0';
-					tokenIndex++; 
-					numTokens++; 
-					tokens[tokenIndex] = line[i]; 
+			}else{tokens[0] = line[0]; }
+
+			for(int i=1; i<strlen(line); i++) {
+
+		
+				if(line[i] == ' ' && line[i-1] != ' '){
+					tokens[tokenIndex] = '\0'; 
 					tokenIndex++;
-				}
-				else{
-					if((line[i] != '<' && line[i] != '>' && line[i] != '|' && line[i] != ' ') && (line[i-1] == '<' || line[i-1] == '>'|| line[i-1] == '|') ){
-						tokens[tokenIndex] = '\0'; 
+					numTokens++; 
+				}else{
+					if( (line[i] == '<' || line[i] == '>'|| line[i] == '|')  && line[i-1] != ' '){
+						tokens[tokenIndex] = '\0';
+						tokenIndex++; 
 						numTokens++; 
-						tokenIndex++; 
-					}
+						tokens[tokenIndex] = line[i]; 
+						tokenIndex++;
+					}else{
+						if((line[i] != '<' && line[i] != '>' && line[i] != '|' && line[i] != ' ') && (line[i-1] == '<' || line[i-1] == '>'|| line[i-1] == '|') ){
+							tokens[tokenIndex] = '\0'; 
+							numTokens++; 
+							tokenIndex++; 
+						}
 
-					if(line[i] != ' '){	
-						tokens[tokenIndex] = line[i] ;
-						tokenIndex++; 
+						if(line[i] != ' '){	
+							tokens[tokenIndex] = line[i] ;
+							tokenIndex++; 
+						}
 					}
 				}
-			}
-		}
-		tokens[strlen(line)+counter ] = '\0';
-		numTokens++; 
 
+			}
+			tokens[strlen(line)+counter ] = '\0';
+			numTokens++; 
+			errorFlag = 0; 
+			/*
+			int i=0; 
+			while(i<strlen(line)+counter+1){
+				if(strchr(&tokens[i], '*') != NULL ){
+				
+					if(wildCard(tokens, i, strlen(line) +counter + 1) ){
+						errorFlag = 1;
+					}
+				}
+				i+=strlen(&tokens[i]) +1;
+			}
+			*/
 		
 		// pass the tokens to execute
-		if(execute(tokens, strlen(line) + counter, numTokens ) )
-			if( argc== 1)
-				write(1, "!", 1);
-						
-		prevLine = line; 
-		line = strtok(NULL, "\n");
+
+			int exc = execute(tokens, strlen(line) + counter, numTokens );
+			char end[] ={"mysh: exiting\n"};
+			if(exc ==1)
+				errorFlag =1; 
+			if(exc ==-1){
 		
-		free(tokens); 
-        }
+				write(1, end, strlen(end) ); 
+
+				return EXIT_SUCCESS; 
+
+			}
+				
+			prevLine = line; 
+			line = strtok(NULL, "\n");
+		
+			free(tokens); 
+       	}
 
 	//if the buffer dosent end on a newline than use lseek to reset to the previous line so the buffer can read the complete line
-	if(newL){
-		if(lseek(fd,(-1) * strlen(prevLine), SEEK_CUR) == -1){
-			perror("lseek"); 
-			return EXIT_FAILURE; ; 
+		if(newL){
+			if(lseek(fd,(-1) * strlen(prevLine), SEEK_CUR) == -1){
+				perror("lseek"); 
+				return EXIT_FAILURE; ; 
+			}
+			newL = 0; 
 		}
-		newL = 0; 
-	}
 
-        // DO THIS: do something when buffer does not end with new line
 	
-        if (argc == 1) {
-            if (write(1, str, strlen(str)) == -1) {
-                perror("Error reading to STDOUT");
-                return EXIT_FAILURE;
-            }
-        }
+       	if (argc == 1) {
+			if(errorFlag){
+				write(1, "!", 1); 
+			}
+          	if (write(1, str, strlen(str)) == -1) {
+          	      perror("Error reading to STDOUT");
+         	       return EXIT_FAILURE;
+         	}
+		}
         bytes = read(fd, buffer, BUFSIZE - 1);
     }
-    return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
-
+ 
