@@ -63,7 +63,7 @@ Interactive Mode:
 
 8) ~ - Testing to see if the user is redirecred to the home directory 
        Test: Create a sub-directory called "testDir" and then navigate into the directory and create a file called "test.txt" (no content written)
-       Run the commands "./mysh","cd testDir","ls", "~/[HOME DIRECTORY]", and then "ls"
+       Run the commands "./mysh","cd testDir", "ls", "cd ~", and then "ls"
        Expected output: The program should redirect to the "testDir" directory and the print out the contents of that directory like so: "test.txt". 
        Then it should go back to the home directory and print the contents of the home directory. 
  
