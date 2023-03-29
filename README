@@ -27,16 +27,20 @@ Implementation:
    
 6) In the execute() function we compared the tokens in the tokens array with key phrases and key tokens: "cd", "pwd", "<", ">", "|", or a bare name exectuable like "cat", "echo", 
    etc.. If there is a match then we set the intended path to be taken to a flag, each number associated with a function that will proceed with executing the desired functionality 
-   of the shell. 
+   of the shell. There is also a checker for the key word "exit" which will then terminate the program, after printing a notifying message. 
    
 7) The first flag that is set is for the "change directory" functionality. This flag when activated will call the changeDir() function which will change the current directory to 
-   a specified directory passed in. 
+   a specified directory passed in. If there is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error
+   and regardless of the mode of the shell an error message will be printed notifying the user. 
 
 8) The second flag that is set is for the "print working directory" functionality. This flag when activited will print all the contents(file names, directories, etc.) of the current
-   directory. 
+   directory. If there is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error
+   and regardless of the mode of the shell an error message will be printed notifying the user. 
    
 9) The third flag that is set is for the 
 
 10) The fourth flag that is set is for the 
 
 11) The fifth flag that is set is for the 
+
+12) After the execute() function is finished the program will be on standby the the next user input if it is interactive mode or it will terminate if it is in bash mode. 
