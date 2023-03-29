@@ -93,15 +93,8 @@ Interactive Mode:
                      output to the terminal should be like so: "hi
                                                                 car
                                                                 mic"
-
-3) "|" / "|" / bare- Testing to see if the program is able to use mulitple pipes
-                     Test: Create a file called "input.txt" with the text "apples are apples when the applets say apple"
-                     Run the commands "./mysh" and then "cat input.txt | grep "apple" | wc -l | sort"
-                     Expected output: The program should display the contents of "input.txt" via cat and then filer the content
-                     by the key word "apple" and then count the number of lines using wc -l and then finally should sort the outputs using "sort".
-                     The resulting output should be outputted to the terminal: "1"
-
-4) ">" / ">" / bare-  Testing to see if the program is able to redirect output mulitple times 
+                                                                
+3) ">" / ">" / bare-  Testing to see if the program is able to redirect output mulitple times 
                       Test: Create the files "output1.txt" and "output2.txt" (all have no content written in them)
                       Run the commands "./mysh" and "echo "hello" > output1.txt > output2.txt" 
                       Expected output: The program should redirect "hello" to "output1.txt" and then to "output2.txt". The file "output2.txt" should 
