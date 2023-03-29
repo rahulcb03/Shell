@@ -2,28 +2,28 @@ Project II: My shell | Rahul Badiani rb1217 & Suchit Kalluru srk170
 Purpose: Create a basic command line shell "mysh.c" using only POSIX Functions. Has two modes "Batch" & "Interactive"
     - Batch: Allows the user to input a file after the command './mysh' in order to execute commands from within the file
     - Interactive : Allows the user to input multiple generic commands(one process at a time) imitating a basic command line shell found on common OS
+    
+The only difference between the two modes is that the fd is changed when reading the commands. They both use the same input loop to read the commands and the same tokenizing algorithm. 
 
 
 Implementation:
 
-1) We had to check the standard input to determine which mode the user wanted to use. We did this by checking the number of arguments inputted 
-   (1 -> Interactive | 2+ -> Batch). We then set the file descriptor to the respective mode; this will allow us to end the program once the request is executed 
+1) We had to check the standard input to determine which mode the user wanted to use. We did this by checking the number of arguments inputed 
+   (1 -> Interactive | 2 -> Batch). We then set the file descriptor to the respective mode; this will allow us to end the program once the request is executed 
    in batch mode but keep the program running in interactive mode. The rest of the program, tokenizing and performing the necessary
    methods in order to execute the user-requested behavior will remain the same regardless of the mode, so this will be the only difference. 
    
 2) Next, we began tokenizing the user's input(this happens regardless of the mode because both modes involve unique tokens that need to be tokenized 
-   to execute the desired commands). To start the process, we created a loop to read until the end of the file/line (depending on the mode). Then we created a 
-   buffer and a 'line' variable that holds the command the user wants to execute. Then we looped through the line tokenizing each key. 
+   to execute the desired commands). To start the process, we created a loop to that calls read and stores the bytes Buffer[]. After read is called we then broke the bytes in the buffer up by lines
+   each line is seperated by a \n. 
    
 3) Next in the tokenizing process, we had to go through each individual character of the command-line input in order to check for key characters, things like 
-   "<", ">", "|", and "*". These key characters would warrant their own token and, therefore would need to be treated as such and separated by the null terminator
+   "<", ">", and "|". These key characters would warrant their own token and, therefore would need to be treated as such and separated by the null terminator
    from the other tokens, which if they are characters are split by the special tokens described above. 
-
 
 4) During the tokenization process, if there is an asterisk "*" then the program will call the wildcard function. The wildCard() function will then alter the tokens array
    to account for the wild card files that are being requested, and then return the updated tokens array. 
-
-
+   
 5) During the process of tokenizing, the tokens are sent to an execute() function in the program, which will handle the actual processes that the user wants to do.
    If the user input is longer than one line, lseek() will flush the buffer and then read from the next line in order to continue reading user input. 
    
