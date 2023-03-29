@@ -8,7 +8,7 @@ Implementation:
 1) We had to check the standard input to figure out which mode the user wanted to use. We did this by checking the number of arguments inputted 
    (1 -> Interactive | 2+ -> Batch). We then set the file descriptor to the respective mode; this will allow us to end the program once the request is executed 
    in batch mode but keep the program running in interactive mode. The rest of the program, tokenizing and performing the necessary
-   methods in order to execute the user requested behaviro will remain the same regardless of the mode, so this will be the only differnce. 
+   methods in order to execute the user requested behavior will remain the same regardless of the mode, so this will be the only differnce. 
    
 2) Next we began tokenizing the users input(this happens regardless of the mode because both modes involve special tokens that need to be tokenized 
    to execute the desired commands). To start the process we created a loop to read until the end of file/line (depending on mode). Then we created a 
