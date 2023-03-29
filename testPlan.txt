@@ -74,7 +74,8 @@ Batch Mode:
                     Test: Created a file called "testBatch.txt" which contains the content: " echo "Enter your age:\n"
                                                                                               read age
                                                                                               echo $age "
-                    Expected output: The program should print an error to the console and terminate the program 
+                    Run the commands "./mysh testBatch.txt"
+                    Expected output: The program should print the contents of testBatch.txt and the "read age" should be replaced by an error message
                  
 Interactive Mode:
 
