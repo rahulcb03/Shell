@@ -10,78 +10,70 @@
 
 #define BUFSIZE 200 
 
-char * wildCard(char *tokens,  int startIndex ,  int size){
+char * wildCard(char *tokens,  int startIndex ,  int *size){
     char **found;
     glob_t gstruct;
     int r;
 
-	//endIndex - The start of the token right after the Wild card toekn
-	int endIndex = strlen(&tokens[startIndex]) + startIndex + 1;
 
     //Glob INtialzier
     r = glob(&tokens[startIndex], GLOB_ERR , NULL, &gstruct);
     /* check for errors */
     if( r!=0 )
-    {
-        if( r==GLOB_NOMATCH )
-            perror("No matches\n");
-        else
-            perror("Some kinda glob error\n");
-
-		exit(1);
+    { 
+		return NULL;
     }
 
     /* success, output found filenames */
     found = gstruct.gl_pathv;
 
-	//Edge Case where the wild card token is the last token
-	int sizeOfWildCard = strlen(&tokens[startIndex]);
-	if(endIndex > size){
-		for(int i=0; i<sizeOfWildCard + 1; i++){
-			tokens[startIndex+i] = '\0';
+	int numFiles=0; 
+	int fileSize =0; 
+
+	while(found[numFiles]!= NULL){
+		fileSize += strlen(found[numFiles])+1; 
+		numFiles++;
+		
+	}
+
+	numFiles--; 
+	
+	//checks to make sure the executable can only have one match
+	if(numFiles >1 && startIndex==0){
+		return NULL; 
+	}
+
+	int newSize = *size - strlen(&tokens[startIndex])-1+fileSize; 
+
+	tokens = realloc(tokens, newSize); 
+
+	//moves everything down the tokens array 
+	int x = newSize -1; 
+	for(int i =*size-1; i>(startIndex + strlen(&tokens[startIndex])); i--){
+		tokens[x] = tokens[i];
+		x--; 
+	}
+
+	int z=0; 
+	int index = startIndex; 
+
+	while(found[z]!=NULL){
+		for(int c=0; c<strlen(found[z]); c++){
+			tokens[index] = found[z][c];
+			index++; 
 		}
-	}
-	//IF the wildcard token is somewher in the middle of the tokens array
-	else{
-		//change the tokens array to get rid of the old wildCard Token
-		for(int i =0; i<size-endIndex; i++){
-			tokens[startIndex+i] = tokens[endIndex+i];
-		}
-	}
-	//Find the size to be realloced
-
-	int addedSize = 0;
-	int numOfMatches= 0;
-	while(*found){
-		addedSize = strlen(*found);
-		numOfMatches++;
-		found++;
+		tokens[index] = '\0';
+		index++;
+		z++; 
 	}
 
-	//Account for the size of the wildcard that is being deleted
-	addedSize -= sizeOfWildCard;
-	//Realloc
-	//Have to include the null terminatior
-	addedSize += numOfMatches;
-	tokens = realloc(tokens, addedSize);
-
-	//Add the matched files to the tokens array
-	//The starting index  would be the start of the wildcard token + the length of whatever is after the wildcard token + 1 cus of the terminator
-	int curr = startIndex + (size-endIndex) + 1;
-	while(*found){
-		int i=0;
-		while(**found){
-			tokens[curr] = *found[i];
-			i++;
-		}
-		tokens[strlen(*found) + 1] = '\0';
-		curr += strlen(*found) + 2;
-	}
-
-	globfree(&gstruct);
-
-    return(0);
+	
+	globfree(&gstruct); 
+	
+	*size = newSize; 
+	return tokens; 
 }
+
 
 //Changing the Directory 
 int changeDir(char* path){
@@ -425,7 +417,7 @@ int main(int argc, char** argv) {
     }
 
     char *line, *tokens, *prevLine;
-    int counter, tokenIndex, numTokens, newL=0; 
+    int counter, tokenIndex, newL=0; 
     char str[] = {"mysh> "};
     char buffer[BUFSIZE];
     int errorFlag; 
@@ -472,7 +464,6 @@ int main(int argc, char** argv) {
 		//1b. initailize the new string with the tokens and \0 between each token 
 		
 			tokenIndex=1; 
-			numTokens =0;
 		
 			if(tokens[0] == ' ') {
 				tokenIndex++;
@@ -484,18 +475,15 @@ int main(int argc, char** argv) {
 				if(line[i] == ' ' && line[i-1] != ' '){
 					tokens[tokenIndex] = '\0'; 
 					tokenIndex++;
-					numTokens++; 
 				}else{
 					if( (line[i] == '<' || line[i] == '>'|| line[i] == '|')  && line[i-1] != ' '){
 						tokens[tokenIndex] = '\0';
 						tokenIndex++; 
-						numTokens++; 
 						tokens[tokenIndex] = line[i]; 
 						tokenIndex++;
 					}else{
 						if((line[i] != '<' && line[i] != '>' && line[i] != '|' && line[i] != ' ') && (line[i-1] == '<' || line[i-1] == '>'|| line[i-1] == '|') ){
 							tokens[tokenIndex] = '\0'; 
-							numTokens++; 
 							tokenIndex++; 
 						}
 
@@ -508,46 +496,67 @@ int main(int argc, char** argv) {
 
 			}
 			tokens[strlen(line)+counter ] = '\0';
-			numTokens++; 
 			errorFlag = 0; 
-			/*
+			
 			int i=0; 
-			while(i<strlen(line)+counter+1){
+			 
+			int size = strlen(line)+counter+1; 
+
+			while(i<size){
 				if(strchr(&tokens[i], '*') != NULL ){
-				
-					if(wildCard(tokens, i, strlen(line) +counter + 1) ){
+
+					tokens = wildCard(tokens, i, &size); 
+					
+					if(tokens == NULL ){
 						errorFlag = 1;
+						break; 
 					}
 				}
 				i+=strlen(&tokens[i]) +1;
 			}
-			*/
+
+			if(tokens!=NULL){
+
+			
+
+				int x=0; 
+				int numTokens=0; 
+				while(x<size){
+					numTokens++; 
+					x+=strlen(&tokens[x]) +1;
+				}
+			
 		
-		// pass the tokens to execute
+			// pass the tokens to execute
 
-			int exc = execute(tokens, strlen(line) + counter, numTokens );
-			char end[] ={"mysh: exiting\n"};
-			if(exc ==1)
-				errorFlag =1; 
-			if(exc ==-1){
-		
-				write(1, end, strlen(end) ); 
+				int exc = execute(tokens, size, numTokens );
+				char end[] ={"mysh: exiting\n"};
+				if(exc ==1)
+					errorFlag =1; 
+				if(exc ==-1){
+			
+					write(1, end, strlen(end) ); 
+					free(tokens);
+					return EXIT_SUCCESS; 
 
-				return EXIT_SUCCESS; 
-
+				}
+			}else{
+				if(argc ==1){
+					write(1, "Invalid Input\n", 14); 
+				}
 			}
 				
 			prevLine = line; 
 			line = strtok(NULL, "\n");
-		
-			free(tokens); 
+			if( tokens != NULL)
+				free(tokens); 
        	}
 
 	//if the buffer dosent end on a newline than use lseek to reset to the previous line so the buffer can read the complete line
 		if(newL){
 			if(lseek(fd,(-1) * strlen(prevLine), SEEK_CUR) == -1){
 				perror("lseek"); 
-				return EXIT_FAILURE; ; 
+				return EXIT_FAILURE; 
 			}
 			newL = 0; 
 		}
