@@ -56,7 +56,11 @@ Implementation:
 11) The fifth flag that is set is for the keyword "exit". This flag, when activated, will print a notifying message to the user and then exit the program if it's in interactive mode. This functionality won't
     have any error checking because it is just terminating the mysh.c program. 
 
-
 12) After the execute() function is finished, the program will be on standby for the next user input if it is in interactive mode, or it will terminate if it is in bash mode. 
+
+Special Cases: 
+       - if the command line contains multiple input or output redirects (ex. ./program1 >out1.txt >out2.txt ) mysh will take the last input redirect and use that when redirecting the output/input/pipe
+       - if cd is piped (ex cd ~|./program1) cd will execute first and send 0 to the program it is pipe to. 
+       - if exit is pip (ex. exit | ./prorgam1) mysh will run program1 first and then exit the shell
 
 * testPlan.txt is the file that holds the various functionality and stress testing we used to make sure that the program works as intended. 
