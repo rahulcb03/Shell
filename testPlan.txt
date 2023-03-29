@@ -15,7 +15,7 @@ Batch Mode:
 Interactive Mode: 
 1) bear / ">" - Testing Redirection of output
                 Test: Created a file called "test.txt", which has no content written in it. 
-                      Ran the command "ls > test.txt", and then checked the content of "test.txt"
+                      Ran the commands "./mysh", "ls > test.txt", and then checked the content of "test.txt"
                       Expected output: "test.txt" contains the content in the current directory
 
 2) bear / "<" - Testing redirection of input
@@ -26,7 +26,7 @@ Interactive Mode:
                                                                                    horse
                                                                                    zop
                                                                                    astrology"
-                      Ran the command "sort < sort.txt", and then checked the content of "sort.txt"
+                      Ran the commands "sort < sort.txt", and then checked the content of "sort.txt"
                       Expected output: "sort.txt" contains the content "apple
                                                                         astrology
                                                                         bar
@@ -37,34 +37,35 @@ Interactive Mode:
 
 3) bear / "|" - Testing redirection of output to file
                 Test: Created a files called "myfile.txt" and "myfile" which have no content written in them. 
-                Ran the command "ls | grep myfile"
+                Ran the commands "./mysh", "ls | grep myfile"
                 Expected output: A list of all files that contain the string "myfile" will be outputted to the user. 
 
 4) bear / "*" - Testing Wild Card functionality
                 Test: Created files called "test1.txt", which has the content "Hello" written in it, and "test2.txt", which has the content "World" written in it.
-                Ran the command "cat *.txt"
+                Ran the command "./mysh", "cat *.txt"
                 Expected output: A the contents of "test1.txt" and "test2.txt" should be displayed on the terminal like so: "Hello
                                                                                                                              World"
   
 5) "cd" - Testing if the change directory function works
           Test: Created a directory called "testDir" and then created a file "test.txt" within the directory
-          Ran the command "cd testDir" and then "ls"
+          Ran the commands "./mysh", "cd testDir", and then "ls"
           Expected output: The contents of "testDir" should be printed to the console like so: "test.txt"
 
 6) "pwd" - Testing if the print workign directory function works 
-           Test: Created a directory called "testDir" and then created the files "test1.txt" and "test2.txt within the directory (no contents written in either)
-           Ran the command "cd testDir" and then "pwd"
+           Test: Created a directory called "testDir" and then created the files "test1.txt" and "test2.txt within the directory 
+           (no contents written in either)
+           Ran the commands "./mysh", "cd testDir" and then "pwd"
            Expected output: The contents of "testDir" should be printed to the console like so: "test1.txt test2.txt"
 
 7) "exit" - Testing if the exit key word exits program
-            Test: Ran the command "exit"
+            Test: Ran the command "./mysh", "exit"
             Expected output: The prompt "mysh: exiting" should be printed and then the program should terminate 
  
                                                                 Edge Cases: 
 Interactive Mode:
 
-1) * - Testing if the program works if the wildCard is the last token 
-   Test: 
+1) * - Testing if the program works if the wildCard is not last token 
+       Test: 
 
 2) > - Testing if the redirection can occur anywhere in the program 
    Test: 
