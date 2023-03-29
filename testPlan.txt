@@ -63,11 +63,12 @@ Interactive Mode:
  
                                                                 Edge Cases: 
 Batch Mode: 
-Prompting user - Testing to make sure that the program will take appropriate response to user input
-                 Test: Created a file called "testBatch.txt" which contains the content: " echo "Enter your age:\n"
-                                                                                           read age
-                                                                                           echo $age "
-                 Expected output: The program should print an error to the console and terminate the program 
+
+1) Prompting user - Testing to make sure that the program will take appropriate response to user input
+                    Test: Created a file called "testBatch.txt" which contains the content: " echo "Enter your age:\n"
+                                                                                              read age
+                                                                                              echo $age "
+                    Expected output: The program should print an error to the console and terminate the program 
                  
 Interactive Mode:
 
