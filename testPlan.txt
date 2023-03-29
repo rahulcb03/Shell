@@ -80,7 +80,7 @@ Interactive Mode:
 
 1) "*" / "|" / bear - Testing to see if hte program is able to use wild cards in tandem with pipe
                       Test: Create the files "hi.txt", "bye.txt", "try.txt" and "hello.txt" (all have no content written in them)
-                      Run the commands "./mysh" and then "ls *.txt | grep "hello"
+                      Run the commands "./mysh" and then "ls *.txt | grep hello"
                       Expected output: The program should first list all the files that have the ".txt" extension and then pipe the output to the grep                         
                       search bear function. Then grep should search for the files that match the string "hello" and the output to terminal should be like                       
                       so: "hello.txt"
