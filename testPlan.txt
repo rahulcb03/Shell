@@ -61,7 +61,7 @@ Interactive Mode:
             Test: Ran the command "./mysh", "exit"
             Expected output: The prompt "mysh: exiting" should be printed and then the program should terminate 
  
-                                                                Edge Cases: 
+                                                                Other Cases: 
 Batch Mode: 
 
 1) Prompting user - Testing to make sure that the program will take appropriate response to user input
@@ -72,11 +72,13 @@ Batch Mode:
                  
 Interactive Mode:
 
-1) * - Testing if the program works if the wildCard is not last token 
-       Test: 
+1) "*" / "|" - Testing to see if hte program is able to use wild cards in tandem with pipe
 
-2) > - Testing if the redirection can occur anywhere in the program 
-   Test: 
+2) "<" / "*" - Testing to see if input can be redirected with tandem with wild card
 
-3) |, >, < - Random Combintaion of redirections and pipes to confirm functionality
-   Test: 
+3) "|" / "*" -  Testing to see if the program is able to use pipe in tandem with wild cards
+
+4) "|" / "|" - Testing to see if the program is able to use mulitple pipes
+
+5) ">" / ">" -  Testing to see if the program is able to redirect output mulitple times 
+
