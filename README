@@ -12,8 +12,7 @@ Implementation:
    
 2) Next we began tokenizing the users input(this happens regardless of the mode because both modes involve special tokens that need to be tokenized 
    to execute the desired commands). To start the process we created a loop to read until the end of file/line (depending on mode). Then we created a 
-   buffer and a 'line' variable which holds the command the user wants to exectue. Then we looped through the line tokenizing each key withiin the command
-   and extiing if the keyword 'exit' is hit. 
+   buffer and a 'line' variable which holds the command the user wants to exectue. Then we looped through the line tokenizing each key. 
    
 3) Next in the tokenizing process we had to go through each individaul character of the command-line input in order to check for key characters, things like 
    "<", ">", "|", and "*". These key characters would warrant their own token and therefore would need to be treated as such and seperated by the null terminator
@@ -37,10 +36,17 @@ Implementation:
    directory. If there is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error
    and regardless of the mode of the shell an error message will be printed notifying the user. 
    
-9) The third flag that is set is for the 
+9) The third and fourth flags are set for the fork, into functioanlity that requries forking to create child processes.
 
-10) The fourth flag that is set is for the 
+10) The third flag that is set is for the bare functionality of the program. This flag when activied will execute command line functionality that is avaliable via the operating system.
+    This inlcudes functionality like: "cat" short for concatonate, "ls" short for list, "echo" used for writing to files, and others. If there is an error in this method and the program is in interactive mode, 
+    the shell identifier message will change to visibly display an error and regardless of the mode of the shell an error message will be printed notifying the user. 
 
-11) The fifth flag that is set is for the 
+10) The fourth flag that is set is for the exeucatable path name functionality. This flag when activited will go through the specified path and then execute the specified program. If there 
+    is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error and regardless of the mode of the shell an error message will 
+    be printed notifying the user. 
+
+11) The fifth flag that is set is for the key word "exit". This flag when activited will print a notifying message to the user and then exit the program if its in interactive mode. This functionality wont
+    have any error checking because it is just terminating the mysh.c program. 
 
 12) After the execute() function is finished the program will be on standby the the next user input if it is interactive mode or it will terminate if it is in bash mode. 
