@@ -10,14 +10,16 @@
 
 /**************1************/
 //startIndex - The start of the Wild Card token
-//endIndex - The start of the token right after Wild Card token
-char * wildCard(int *tokens,  int startIndex , int endIndex, int size){
-	char **found;
+char * wildCard(char *tokens,  int startIndex ,  int size){
+    char **found;
     glob_t gstruct;
     int r;
- 
-    //Glob intilization
-    r = glob(tokens[startIndex], GLOB_ERR , NULL, &gstruct);
+	
+	//endIndex - The start of the token right after the Wild card toekn 
+	int endIndex = strlen(&tokens[startIndex]) + startIndex + 1;
+	
+    //Glob INtialzier
+    r = glob(&tokens[startIndex], GLOB_ERR , NULL, &gstruct);
     /* check for errors */
     if( r!=0 )
     {
@@ -32,11 +34,20 @@ char * wildCard(int *tokens,  int startIndex , int endIndex, int size){
     /* success, output found filenames */
     found = gstruct.gl_pathv;
     
-	//change the tokens array to get rid of the old wildCard Token
-	for(int i =0; i<size-endIndex; i++){
-		tokens[startIndex+i] = tokens[endIndex+i];
+	//Edge Case where the wild card token is the last token 
+	int sizeOfWildCard = strlen(&tokens[startIndex]);
+	if(endIndex > size){
+		for(int i=0; i<sizeOfWildCard + 1; i++){
+			tokens[startIndex+i] = '\0';
+		}
 	}
-	
+	//IF the wildcard token is somewher in the middle of the tokens array
+	else{
+		//change the tokens array to get rid of the old wildCard Token
+		for(int i =0; i<size-endIndex; i++){
+			tokens[startIndex+i] = tokens[endIndex+i];
+		}
+	}
 	//Find the size to be realloced
 
 	int addedSize = 0;
@@ -46,7 +57,9 @@ char * wildCard(int *tokens,  int startIndex , int endIndex, int size){
 		numOfMatches++;
 		found++;
 	}
-
+	
+	//Account for the size of the wildcard that is being deleted
+	addedSize -= sizeOfWildCard;
 	//Realloc
 	//Have to include the null terminatior
 	addedSize += numOfMatches;
@@ -56,7 +69,11 @@ char * wildCard(int *tokens,  int startIndex , int endIndex, int size){
 	//The starting index  would be the start of the wildcard token + the length of whatever is after the wildcard token + 1 cus of the terminator 
 	int curr = startIndex + (size-endIndex) + 1;
 	while(*found){
-		tokens[curr] =  *found;
+		int i=0;
+		while(**found){
+			tokens[curr] = *found[i];
+			i++;
+		}
 		tokens[strlen(*found) + 1] = '\0';
 		curr += strlen(*found) + 2;
 	}
@@ -65,6 +82,7 @@ char * wildCard(int *tokens,  int startIndex , int endIndex, int size){
 }
 
 /************2*************/
+
 
 
 
