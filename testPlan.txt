@@ -1,4 +1,49 @@
 Testing: mysh.c
-Bash Mode:
+Functionality to Test: 
 
-Interactive Mode:
+> -Testing Redirection of output
+Test: 
+
+>, > - Testing multilayer redirection
+Test: 
+
+| - Testing redirection of output
+Test: 
+
+|, | - Testing multilayered redirection
+Test: 
+
+* - Testing wildCard functionality
+Test: 
+
+*, * - Testing if mulitple wildCards can be used
+Test: 
+
+> | - Testing if redirection works with pipes 
+Test: 
+
+* | - Testing if wildCard functionality works with pipes
+Test: 
+
+* >  - Testing if wildCard functionality works with redirection
+Test: 
+
+CAT - Testing if the concatanate function works
+Test: 
+
+ECHO - Testing if the echo function works
+ Test: 
+
+LS - Testing if the list function works
+Test: 
+
+CD - Testing if the change directory function works
+Test: 
+
+PWD - Testing if the print workign directory function works 
+Test: 
+
+EXIT - Testing if the exit key word exits program
+Test: 
+ 
+Edge Cases: 
