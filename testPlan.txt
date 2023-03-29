@@ -74,19 +74,28 @@ Interactive Mode:
 
 1) "*" / "|" / bear - Testing to see if hte program is able to use wild cards in tandem with pipe
                       Test: Create the files "hi.txt", "bye.txt", "try.txt" and "hello.txt" (all have no content written in them)
-                      Run the commands "mysh.c" and then "ls *.txt | grep "hello"
+                      Run the commands "./mysh" and then "ls *.txt | grep "hello"
                       Expected output: The program should first list all the files that have the ".txt" extension and then pipe the output to the grep                         search bear function. Then grep should search for the files that match the string "hello" and the output to terminal should be like                       so: "hello.txt"
 
 2) "<" / "*" / bear- Testing to see if input can be redirected with tandem with wild card
-                     Test: Create the files "hi.txt", with the content "hi" written in it; "car.txt", with the content "car" written in it; and                                "mic.txt",with the content "mic" written in it
-                     Run the commands "mysh.c" and "cat < *.txt"
-                     Expected output: The program should redirect the contents of all files with the ".txt" extension to the cat bear function. The                            output to the terminal should be like so: "hi
+                     Test: Create the files "hi.txt", with the content "hi" written in it; "car.txt", with the content "car" written in it; and
+                     "mic.txt",with the content "mic" written in it
+                     Run the commands "./mysh" and "cat < *.txt"
+                     Expected output: The program should redirect the contents of all files with the ".txt" extension to the cat bear function. The
+                     output to the terminal should be like so: "hi
                                                                 car
                                                                 mic"
-          
-3) "|" / "*" / bear-  Testing to see if the program is able to use pipe in tandem with wild cards
 
-4) "|" / "|" / bear- Testing to see if the program is able to use mulitple pipes
+3) "|" / "|" / bear- Testing to see if the program is able to use mulitple pipes
+                     Test: Create a file called "input.txt" with the text "apples are apples when the applets say apple"
+                     Run the commands "./mysh" and then "cat input.txt | grep "apple" | wc -l | sort"
+                     Expected output: The program should display the contents of "input.txt" via cat and then filer the content
+                     by the key word "apple" and then count the number of lines using wc -l and then finally should sort the outputs using "sort".
+                     The resulting output should be outputted to the terminal: "1"
 
-5) ">" / ">" / bear-  Testing to see if the program is able to redirect output mulitple times 
+4) ">" / ">" / bear-  Testing to see if the program is able to redirect output mulitple times 
+                      Test: Create the files "output1.txt" and "output2.txt" (all have no content written in them)
+                      Run the commands "./mysh" and "echo "hello" > output1.txt > output2.txt" 
+                      Expected output: The program should redirect "hello" to "output1.txt" and then to "output2.txt". The file "output2.txt" should 
+                      contain the phrase "hello". 
 
