@@ -72,13 +72,21 @@ Batch Mode:
                  
 Interactive Mode:
 
-1) "*" / "|" - Testing to see if hte program is able to use wild cards in tandem with pipe
+1) "*" / "|" / bear - Testing to see if hte program is able to use wild cards in tandem with pipe
+                      Test: Create the files "hi.txt", "bye.txt", "try.txt" and "hello.txt" (all have no content written in them)
+                      Run the commands "mysh.c" and then "ls *.txt | grep "hello"
+                      Expected output: The program should first list all the files that have the ".txt" extension and then pipe the output to the grep                         search bear function. Then grep should search for the files that match the string "hello" and the output to terminal should be like                       so: "hello.txt"
 
-2) "<" / "*" - Testing to see if input can be redirected with tandem with wild card
+2) "<" / "*" / bear- Testing to see if input can be redirected with tandem with wild card
+                     Test: Create the files "hi.txt", with the content "hi" written in it; "car.txt", with the content "car" written in it; and                                "mic.txt",with the content "mic" written in it
+                     Run the commands "mysh.c" and "cat < *.txt"
+                     Expected output: The program should redirect the contents of all files with the ".txt" extension to the cat bear function. The                            output to the terminal should be like so: "hi
+                                                                car
+                                                                mic"
+          
+3) "|" / "*" / bear-  Testing to see if the program is able to use pipe in tandem with wild cards
 
-3) "|" / "*" -  Testing to see if the program is able to use pipe in tandem with wild cards
+4) "|" / "|" / bear- Testing to see if the program is able to use mulitple pipes
 
-4) "|" / "|" - Testing to see if the program is able to use mulitple pipes
-
-5) ">" / ">" -  Testing to see if the program is able to redirect output mulitple times 
+5) ">" / ">" / bear-  Testing to see if the program is able to redirect output mulitple times 
 
