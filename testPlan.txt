@@ -62,6 +62,13 @@ Interactive Mode:
             Expected output: The prompt "mysh: exiting" should be printed and then the program should terminate 
  
                                                                 Edge Cases: 
+Batch Mode: 
+Prompting user - Testing to make sure that the program will take appropriate response to user input
+                 Test: Created a file called "testBatch.txt" which contains the content: " echo "Enter your age:\n"
+                                                                                           read age
+                                                                                           echo $age "
+                 Expected output: The program should print an error to the console and terminate the program 
+                 
 Interactive Mode:
 
 1) * - Testing if the program works if the wildCard is not last token 
