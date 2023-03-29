@@ -3,57 +3,62 @@ Testing: mysh.c
 Batch Mode: 
 1) Testing that batch mode is able to correctly read from the file provided and exucte the commands listed 
    Test: Created a file called "testbatch.txt". 
-         testbatch.txt contains the content: "echo "Hello World"
-                                              ls
-                                              mkdir testdir
-                                              cd testdir
-                                              pwd"
+         The file "testbatch.txt" contains the content: "echo "Hello World"
+                                                         ls
+                                                         mkdir testdir
+                                                         cd testdir
+                                                         pwd"
+          Ran the command "./mysh testbatch.txt"
+          Expected output: Prints "Hello World" in the command line, then lists all the content in current directory, 
+          makes a directory called "testdir", changes director to "testdir", prints content of "testdir"
 
 Interactive Mode: 
-1) > -Testing Redirection of output
-   Test: 
+1) bear / ">" - Testing Redirection of output
+                Test: Created a file called "test.txt", which has no content written in it. 
+                      Ran the command "ls > test.txt", and then checked the content of "test.txt"
+                      Expected output: "test.txt" contains the content in the current directory
 
-2) >, > - Testing multilayer redirection
-   Test: 
+2) bear / "<" - Testing redirection of input
+                Test: Created a file called "sort.txt" which has the the content: "bar
+                                                                                   apple
+                                                                                   card
+                                                                                   zoo
+                                                                                   horse
+                                                                                   zop
+                                                                                   astrology"
+                      Ran the command "sort < sort.txt", and then checked the content of "sort.txt"
+                      Expected output: "sort.txt" contains the content "apple
+                                                                        astrology
+                                                                        bar
+                                                                        card
+                                                                        horse
+                                                                        zoo
+                                                                        zop"                                                                      
 
-3)| - Testing redirection of output
-  Test: 
+3) bear / "|" - Testing redirection of output to file
+                Test: Created a files called "myfile.txt" and "myfile" which have no content written in them. 
+                Ran the command "ls | grep myfile"
+                Expected output: A list of all files that contain the string "myfile" will be outputted to the user. 
 
-4) |, | - Testing multilayered redirection
-   Test: 
+4) bear / "*" - Testing Wild Card functionality
+                Test: Created files called "test1.txt", which has the content "Hello" written in it, and "test2.txt", which has the content "World" written in it.
+                Ran the command "cat *.txt"
+                Expected output: A the contents of "test1.txt" and "test2.txt" should be displayed on the terminal like so: "Hello
+                                                                                                                             World"
+  
+5) "cd" - Testing if the change directory function works
+          Test: Created a directory called "testDir" and then created a file "test.txt" within the directory
+          Ran the command "cd testDir" and then "ls"
+          Expected output: The contents of "testDir" should be printed to the console like so: "test.txt"
 
-5) * - Testing wildCard functionality
-   Test: 
+6) "pwd" - Testing if the print workign directory function works 
+           Test: Created a directory called "testDir" and then created the files "test1.txt" and "test2.txt within the directory (no contents written in either)
+           Ran the command "cd testDir" and then "pwd"
+           Expected output: The contents of "testDir" should be printed to the console like so: "test1.txt test2.txt"
 
-6) *, * - Testing if mulitple wildCards can be used
-   Test: 
-
-7) > | - Testing if redirection works with pipes 
-   Test: 
-
-8) * | - Testing if wildCard functionality works with pipes
-   Test: 
-
-9) * >  - Testing if wildCard functionality works with redirection
-   Test: 
-
-10) CAT - Testing if the concatanate function works
-    Test: 
-
-11) ECHO - Testing if the echo function works
-    Test: 
-
-12) LS - Testing if the list function works
-    Test: 
-    
-13) CD - Testing if the change directory function works
-    Test: 
-
-14) PWD - Testing if the print workign directory function works 
-    Test: 
-
-15) EXIT - Testing if the exit key word exits program
-    Test: 
+7) "exit" - Testing if the exit key word exits program
+            Test: Ran the command "exit"
+            Expected output: The prompt "mysh: exiting" should be printed and then the program should terminate 
  
                                                                 Edge Cases: 
 Interactive Mode:
