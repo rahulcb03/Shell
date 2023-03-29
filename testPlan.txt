@@ -26,14 +26,14 @@ Interactive Mode:
                                                                                    horse
                                                                                    zop
                                                                                    astrology"
-                      Ran the commands "sort < sort.txt", and then checked the content of "sort.txt"
-                      Expected output: "sort.txt" contains the content "apple
-                                                                        astrology
-                                                                        bar
-                                                                        card
-                                                                        horse
-                                                                        zoo
-                                                                        zop"                                                                      
+                      Ran the commands "./mysh", "sort < sort.txt"
+                      Expected output: the Following should be printed to the console: "apple
+                                                                                        astrology
+                                                                                        bar
+                                                                                        card
+                                                                                        horse
+                                                                                        zoo
+                                                                                        zop"                                                                      
 
 3) bare / "|" - Testing redirection of output to file along with the bare function "ls & grep"
                 Test: Created a files called "myfile.txt" and "myfile" which have no content written in them. 
