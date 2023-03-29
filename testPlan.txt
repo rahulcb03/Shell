@@ -2,7 +2,7 @@ Testing: mysh.c
                                                             Functionality Testing:
 Batch Mode: 
 1) Testing that batch mode is able to correctly read from the file provided and exucte the commands listed 
-   Test: Created a file called "testbatch.txt". 
+   Test: Created a file called "testBatch.txt". 
          The file "testbatch.txt" contains the content: "echo "Hello World"
                                                          ls
                                                          mkdir testdir
