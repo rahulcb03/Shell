@@ -13,12 +13,12 @@ Batch Mode:
           makes a directory called "testdir", changes director to "testdir", prints content of "testdir"
 
 Interactive Mode: 
-1) bear / ">" - Testing Redirection of output along with the bear function "ls"
+1) bare / ">" - Testing Redirection of output along with the bare function "ls"
                 Test: Created a file called "test.txt", which has no content written in it. 
                       Ran the commands "./mysh", "ls > test.txt", and then checked the content of "test.txt"
                       Expected output: "test.txt" contains the content in the current directory
 
-2) bear / "<" - Testing redirection of inputalong with the bear function "sort"
+2) bare / "<" - Testing redirection of inputalong with the bare function "sort"
                 Test: Created a file called "sort.txt" which has the the content: "bar
                                                                                    apple
                                                                                    card
@@ -35,12 +35,12 @@ Interactive Mode:
                                                                         zoo
                                                                         zop"                                                                      
 
-3) bear / "|" - Testing redirection of output to file along with the bear function "ls & grep"
+3) bare / "|" - Testing redirection of output to file along with the bare function "ls & grep"
                 Test: Created a files called "myfile.txt" and "myfile" which have no content written in them. 
                 Ran the commands "./mysh", "ls | grep myfile"
                 Expected output: A list of all files that contain the string "myfile" will be outputted to the user. 
 
-4) bear / "*" - Testing Wild Card functionality along with the bear function "cat"
+4) bare / "*" - Testing Wild Card functionality along with the bare function "cat"
                 Test: Created files called "test1.txt", which has the content "Hello" written in it, and "test2.txt", which has the content "World" written in it.
                 Ran the command "./mysh", "cat *.txt"
                 Expected output: A the contents of "test1.txt" and "test2.txt" should be displayed on the terminal like so: "Hello
