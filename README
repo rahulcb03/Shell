@@ -22,4 +22,11 @@ Implementation:
 5) During the process of tokenizing the tokens are sent to an execute() function in the program which will handle the actual processes that the user wants to do.
    If the user input is longer then one line, lseek() will flush the buffer and then read from the next line in order to continue reading user input. 
    
-6) 
+6) In the execute() function we compared the tokens in the tokens array with key phrases and key tokens: "cd", "pwd", "<", ">", "|", or a bare name exectuable like "cat", "echo", 
+   etc.. If there is a match then we set the intended path to be taken to a flag, each number associated with a function that will proceed with executing the desired functionality 
+   of the shell. 
+   
+7) The first flag that is set is for the "change directory" functionality. This flag when activated will call the changeDir() function which will change the current directory to 
+   a specified directory passed in. 
+
+8) The second flag that is set is for the "print current directory
