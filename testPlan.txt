@@ -55,7 +55,7 @@ Interactive Mode:
            Test: Created a directory called "testDir" and then created the files "test1.txt" and "test2.txt within the directory 
            (no contents written in either)
            Ran the commands "./mysh", "cd testDir" and then "pwd"
-           Expected output: The contents of "testDir" should be printed to the console like so: "test1.txt test2.txt"
+           Expected output: The contents of "testDir" should be printed to the console like so: "[Home Path]/testDir"
 
 7) "exit" - Testing if the exit key word exits program
             Test: Ran the command "./mysh", "exit"
