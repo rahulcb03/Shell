@@ -58,3 +58,5 @@ Implementation:
 
 
 12) After the execute() function is finished, the program will be on standby for the next user input if it is in interactive mode, or it will terminate if it is in bash mode. 
+
+* testPlan.txt is the file that holds the various functionality and stress testing we used to make sure that the program works as intended. 
