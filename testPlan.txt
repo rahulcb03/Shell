@@ -1,58 +1,63 @@
 Testing: mysh.c
-                                                            Functionality to Test: 
+                                                            Functionality Testing:
+Batch Mode: 
+1) Testing that batch mode is able to correctly read from the file provided and exucte the commands listed 
+   Test: 
 
-> -Testing Redirection of output
-Test: 
+Interactive Mode: 
+1) > -Testing Redirection of output
+   Test: 
 
->, > - Testing multilayer redirection
-Test: 
+2) >, > - Testing multilayer redirection
+   Test: 
 
-| - Testing redirection of output
-Test: 
+3)| - Testing redirection of output
+  Test: 
 
-|, | - Testing multilayered redirection
-Test: 
+4) |, | - Testing multilayered redirection
+   Test: 
 
-* - Testing wildCard functionality
-Test: 
+5) * - Testing wildCard functionality
+   Test: 
 
-*, * - Testing if mulitple wildCards can be used
-Test: 
+6) *, * - Testing if mulitple wildCards can be used
+   Test: 
 
-> | - Testing if redirection works with pipes 
-Test: 
+7) > | - Testing if redirection works with pipes 
+   Test: 
 
-* | - Testing if wildCard functionality works with pipes
-Test: 
+8) * | - Testing if wildCard functionality works with pipes
+   Test: 
 
-* >  - Testing if wildCard functionality works with redirection
-Test: 
+9) * >  - Testing if wildCard functionality works with redirection
+   Test: 
 
-CAT - Testing if the concatanate function works
-Test: 
+10) CAT - Testing if the concatanate function works
+    Test: 
 
-ECHO - Testing if the echo function works
- Test: 
+11) ECHO - Testing if the echo function works
+    Test: 
 
-LS - Testing if the list function works
-Test: 
+12) LS - Testing if the list function works
+    Test: 
+    
+13) CD - Testing if the change directory function works
+    Test: 
 
-CD - Testing if the change directory function works
-Test: 
+14) PWD - Testing if the print workign directory function works 
+    Test: 
 
-PWD - Testing if the print workign directory function works 
-Test: 
-
-EXIT - Testing if the exit key word exits program
-Test: 
+15) EXIT - Testing if the exit key word exits program
+    Test: 
  
                                                                 Edge Cases: 
-                                                                
-* - Testing if the program works if the wildCard is the last token 
-Test: 
+Interactive Mode:
 
-> - Testing if the redirection can occur anywhere in the program 
-Test: 
+1) * - Testing if the program works if the wildCard is the last token 
+   Test: 
 
-|, >, < - Random Combintaion of redirections and pipes to confirm functionality
-Test: 
+2) > - Testing if the redirection can occur anywhere in the program 
+   Test: 
+
+3) |, >, < - Random Combintaion of redirections and pipes to confirm functionality
+   Test: 
