@@ -3,50 +3,58 @@ Purpose: Create a basic command line shell "mysh.c" using only POSIX Functions. 
     - Batch: Allows the user to input a file after the command './mysh' in order to execute commands from within the file
     - Interactive : Allows the user to input multiple generic commands(one process at a time) imitating a basic command line shell found on common OS
 
+
 Implementation:
 
-1) We had to check the standard input to figure out which mode the user wanted to use. We did this by checking the number of arguments inputted 
+1) We had to check the standard input to determine which mode the user wanted to use. We did this by checking the number of arguments inputted 
    (1 -> Interactive | 2+ -> Batch). We then set the file descriptor to the respective mode; this will allow us to end the program once the request is executed 
    in batch mode but keep the program running in interactive mode. The rest of the program, tokenizing and performing the necessary
-   methods in order to execute the user requested behavior will remain the same regardless of the mode, so this will be the only differnce. 
+   methods in order to execute the user-requested behavior will remain the same regardless of the mode, so this will be the only difference. 
    
-2) Next we began tokenizing the users input(this happens regardless of the mode because both modes involve special tokens that need to be tokenized 
-   to execute the desired commands). To start the process we created a loop to read until the end of file/line (depending on mode). Then we created a 
-   buffer and a 'line' variable which holds the command the user wants to exectue. Then we looped through the line tokenizing each key. 
+2) Next, we began tokenizing the user's input(this happens regardless of the mode because both modes involve unique tokens that need to be tokenized 
+   to execute the desired commands). To start the process, we created a loop to read until the end of the file/line (depending on the mode). Then we created a 
+   buffer and a 'line' variable that holds the command the user wants to execute. Then we looped through the line tokenizing each key. 
    
-3) Next in the tokenizing process we had to go through each individaul character of the command-line input in order to check for key characters, things like 
-   "<", ">", "|", and "*". These key characters would warrant their own token and therefore would need to be treated as such and seperated by the null terminator
-   from the other tokens, which if they are characters are split by the sepcial tokens described above. 
+3) Next in the tokenizing process, we had to go through each individual character of the command-line input in order to check for key characters, things like 
+   "<", ">", "|", and "*". These key characters would warrant their own token and, therefore would need to be treated as such and separated by the null terminator
+   from the other tokens, which if they are characters are split by the special tokens described above. 
 
-4) During the tokeniziation process, if there is an astrick "*" then the program will call the wildCard function. The wildCard() function will then alter the tokens array
+
+4) During the tokenization process, if there is an asterisk "*" then the program will call the wildcard function. The wildCard() function will then alter the tokens array
    to account for the wild card files that are being requested, and then return the updated tokens array. 
 
-5) During the process of tokenizing the tokens are sent to an execute() function in the program which will handle the actual processes that the user wants to do.
-   If the user input is longer then one line, lseek() will flush the buffer and then read from the next line in order to continue reading user input. 
+
+5) During the process of tokenizing, the tokens are sent to an execute() function in the program, which will handle the actual processes that the user wants to do.
+   If the user input is longer than one line, lseek() will flush the buffer and then read from the next line in order to continue reading user input. 
    
-6) In the execute() function we compared the tokens in the tokens array with key phrases and key tokens: "cd", "pwd", "<", ">", "|", or a bare name exectuable like "cat", "echo", 
-   etc.. If there is a match then we set the intended path to be taken to a flag, each number associated with a function that will proceed with executing the desired functionality 
-   of the shell. There is also a checker for the key word "exit" which will then terminate the program, after printing a notifying message. 
+6) In the execute() function, we compared the tokens in the tokens array with key phrases and key tokens: "cd", "pwd", "<", ">", "|", or a bare name executable like "cat", "echo", 
+   etc. If there is a match, then we set the intended path to be taken to a flag, each number associated with a function that will proceed with executing the desired functionality 
+   of the shell. There is also a checker for the keyword "exit" which will then terminate the program after printing a notifying message. 
    
-7) The first flag that is set is for the "change directory" functionality. This flag when activated will call the changeDir() function which will change the current directory to 
+7) The first flag set is for the "change directory" functionality. This flag, when activated, will call the changeDir() function, which will change the current directory to 
    a specified directory passed in. If there is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error
-   and regardless of the mode of the shell an error message will be printed notifying the user. 
+   , and regardless of the mode of the shell an error message will be printed notifying the user. 
 
-8) The second flag that is set is for the "print working directory" functionality. This flag when activited will print all the contents(file names, directories, etc.) of the current
+
+8) The second flag that is set is for the "print working directory" functionality. This flag, when activited will print all the contents(file names, directories, etc.) of the current
    directory. If there is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error
-   and regardless of the mode of the shell an error message will be printed notifying the user. 
+   , and regardless of the mode of the shell, an error message will be printed notifying the user. 
    
-9) The third and fourth flags are set for the fork, into functioanlity that requries forking to create child processes.
+9) The third and fourth flags are set for the fork, into functionality that requires forking to create child processes.
 
-10) The third flag that is set is for the bare functionality of the program. This flag when activied will execute command line functionality that is avaliable via the operating system.
-    This inlcudes functionality like: "cat" short for concatonate, "ls" short for list, "echo" used for writing to files, and others. If there is an error in this method and the program is in interactive mode, 
-    the shell identifier message will change to visibly display an error and regardless of the mode of the shell an error message will be printed notifying the user. 
 
-10) The fourth flag that is set is for the exeucatable path name functionality. This flag when activited will go through the specified path and then execute the specified program. If there 
-    is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error and regardless of the mode of the shell an error message will 
-    be printed notifying the user. 
+10) The third flag that is set is for the bare functionality of the program. This flag, when activated, will execute command line functionality that is available via the operating system.
+    This includes functionality like: "cat" short for concatenate, "ls" short for list, "echo" used for writing to files, and others. If there is an error in this method and the program is in interactive mode, 
+    the shell identifier message will change to visibly display an error, and regardless of the mode of the shell, an error message will be printed notifying the user. 
 
-11) The fifth flag that is set is for the key word "exit". This flag when activited will print a notifying message to the user and then exit the program if its in interactive mode. This functionality wont
+
+10) The fourth flag that is set is for the executable path name functionality. This flag, when activated, will go through the specified path and then execute the specified program. If there 
+    is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error, and regardless of the mode of the shell, an error message will 
+    be printed, notifying the user. 
+
+
+11) The fifth flag that is set is for the keyword "exit". This flag, when activated, will print a notifying message to the user and then exit the program if it's in interactive mode. This functionality won't
     have any error checking because it is just terminating the mysh.c program. 
 
-12) After the execute() function is finished the program will be on standby the the next user input if it is interactive mode or it will terminate if it is in bash mode. 
+
+12) After the execute() function is finished, the program will be on standby for the next user input if it is in interactive mode, or it will terminate if it is in bash mode. 
