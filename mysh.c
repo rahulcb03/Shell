@@ -77,6 +77,8 @@ char * wildCard(char *tokens,  int startIndex ,  int size){
 		tokens[strlen(*found) + 1] = '\0';
 		curr += strlen(*found) + 2;
 	}
+	
+	globfree(&gstruct);
 
     return(0);	
 }
