@@ -6,7 +6,9 @@ Purpose: Create a basic command line shell "mysh.c" using only POSIX Functions. 
 Implementation:
 
 1) We had to check the standard input to figure out which mode the user wanted to use. We did this by checking the number of arguments inputted 
-   (1 -> Interactive | 2+ -> Batch). We then set the file descriptor to the respective mode.
+   (1 -> Interactive | 2+ -> Batch). We then set the file descriptor to the respective mode; this will allow us to end the program once the request is executed 
+   in batch mode but keep the program running in interactive mode. The rest of the program, tokenizing and performing the necessary
+   methods in order to execute the user requested behaviro will remain the same regardless of the mode, so this will be the only differnce. 
    
 2) Next we began tokenizing the users input(this happens regardless of the mode because both modes involve special tokens that need to be tokenized 
    to execute the desired commands). To start the process we created a loop to read until the end of file/line (depending on mode). Then we created a 
@@ -15,4 +17,9 @@ Implementation:
    
 3) Next in the tokenizing process we had to go through each individaul character of the command-line input in order to check for key characters, things like 
    "<", ">", "|", and "*". These key characters would warrant their own token and therefore would need to be treated as such and seperated by the null terminator
-   from the other tokens. 
+   from the other tokens, which if they are characters are split by the sepcial tokens described above. 
+   
+5) During the process of tokenizing the tokens are sent to an execute() function in the program which will handle the actual processes that the user wants to do.
+   If the user input is longer then one line, lseek() will flush the buffer and then read from the next line in order to continue reading user input. 
+   
+6) 
