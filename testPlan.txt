@@ -101,3 +101,12 @@ Interactive Mode:
                       Expected output: The program should redirect "hello" to "output1.txt" and then to "output2.txt". The file "output2.txt" should 
                       contain the phrase "hello". 
 
+                                                              Additional Testing: 
+For the testing provided in this tar file, we included a testBatch.txt. 
+testBatch.txt content: 
+              - Everything from the Batch tests described in the functionality section
+              - Tests the piping of output of program 1(Takes three numbers and adds them) into program 2(Takes one number and checks if its even)
+              - Tests the redirection of output from program 1 into a text file called output.txt
+              - Checks the directory for files with the string "mysh" and redirects all matching files into a file named input.txt
+              - Checks the directory for files with the string "my*h"(wildcard testing) and redirects all matching files into a file named input1.txt
+              - Everything from the Batch tests described in the other cases section
