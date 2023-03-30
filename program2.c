@@ -1,8 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 
-//Program that takes in one int and then checks if its even, prints output to STDOUT
-int main(int argc, char** argv) {
-  
+int main (int argc, char** argv){
+	
+	int num; 
+	scanf("%d", &num);
+
+	if(num%2 ==0){
+		printf("the number %d is even", num); 
+	}else{
+		printf("the number %d is even", num); 
+	}
+
+	return EXIT_SUCCESS; 
+
 }
