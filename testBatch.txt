@@ -14,8 +14,8 @@ cat program2.c
 ./program1  > output.txt 1 2 3
 cat output.txt
 
-ls | grep mysh < input.txt
-ls | grep m*sh < input1.txt
+ls | grep mysh > input.txt
+ls | grep m*sh > input1.txt
 cat input.txt
 cat input1.txt
 
