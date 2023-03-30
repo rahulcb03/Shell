@@ -11,4 +11,4 @@ mysh.o: mysh.c
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	
+	rm -f $(TARGET) $(OBJS)
