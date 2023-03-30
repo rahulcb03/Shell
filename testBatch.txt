@@ -10,7 +10,9 @@ cd this_file_doesn't_exist
 gcc -o program1.c 
 gcc -o program2.c
 ./program1 1 2 3 | ./program2
+cat program2.c
 ./program1  > output.txt 1 2 3
+cat output.txt
 
 ls | grep mysh < input.txt
 ls | grep m*sh < input1.txt
