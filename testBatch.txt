@@ -1,0 +1,23 @@
+echo Hello World
+ls 
+mkdir testDir
+cd testDir
+pwd
+cd ..
+pwd
+cd this_file_doesn't_exist
+
+gcc -o program1.c 
+gcc -o program2.c
+./program1 1 2 3 | ./program2
+./program1  > output.txt 1 2 3
+
+ls | grep mysh < input.txt
+ls | grep m*sh < input1.txt
+cat input.txt
+cat input1.txt
+
+cd ~
+echo "Enter your age:\n"
+read age
+echo "$age"
