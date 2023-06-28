@@ -1,4 +1,4 @@
-Project II: My shell | Rahul Badiani rb1217 & Suchit Kalluru srk170
+My shell | Rahul Badiani & Suchit Kalluru 
 Purpose: Create a basic command line shell "mysh.c" using only POSIX Functions. Has two modes "Batch" & "Interactive"
     - Batch: Allows the user to input a file after the command './mysh' in order to execute commands from within the file
     - Interactive : Allows the user to input multiple generic commands(one process at a time) imitating a basic command line shell found on common OS
@@ -6,61 +6,23 @@ Purpose: Create a basic command line shell "mysh.c" using only POSIX Functions. 
 The only difference between the two modes is that the fd is changed when reading the commands. They both use the same input loop to read the commands and the same tokenizing algorithm. 
 
 
-Implementation:
+This program simulates a shell environment that can run executables with arguments and allows for redirects, pipes, and wildcards.
 
-1) We had to check the standard input to determine which mode the user wanted to use. We did this by checking the number of arguments inputed 
-   (1 -> Interactive | 2 -> Batch). We then set the file descriptor to the respective mode; this will allow us to end the program once the request is executed 
-   in batch mode but keep the program running in interactive mode. The rest of the program, tokenizing and performing the necessary
-   methods in order to execute the user-requested behavior will remain the same regardless of the mode, so this will be the only difference. 
-   
-2) Next, we began tokenizing the user's input(this happens regardless of the mode because both modes involve unique tokens that need to be tokenized 
-   to execute the desired commands). To start the process, we created a loop to that calls read and stores the bytes Buffer[]. After read is called we then broke the bytes in the buffer up by lines
-   each line is seperated by a \n. 
-   
-3) Next in the tokenizing process, we had to go through each individual character of the command-line input in order to check for key characters, things like 
-   "<", ">", and "|". These key characters would warrant their own token and, therefore would need to be treated as such and separated by the null terminator
-   from the other tokens, which if they are characters are split by the special tokens described above. 
+The mysh.c is the main program and the other programs can be used to test the shell.
 
-4) During the tokenization process, if there is an asterisk "*" then the program will call the wildcard function. The wildCard() function will then alter the tokens array
-   to account for the wild card files that are being requested, and then return the updated tokens array. 
-   
-5) During the process of tokenizing, the tokens are sent to an execute() function in the program, which will handle the actual processes that the user wants to do.
-   If the user input is longer than one line, lseek() will flush the buffer and then read from the next line in order to continue reading user input. 
-   
-6) In the execute() function, we compared the tokens in the tokens array with key phrases and key tokens: "cd", "pwd", "<", ">", "|", or a bare name executable like "cat", "echo", 
-   etc. If there is a match, then we set the intended path to be taken to a flag, each number associated with a function that will proceed with executing the desired functionality 
-   of the shell. There is also a checker for the keyword "exit" which will then terminate the program after printing a notifying message. 
-   
-7) The first flag set is for the "change directory" functionality. This flag, when activated, will call the changeDir() function, which will change the current directory to 
-   a specified directory passed in. If there is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error
-   , and regardless of the mode of the shell an error message will be printed notifying the user. 
+Redirects
+    - using the '>' token will allow the user to redirect the standard output into a separate file
+        - if the specified file does not exist it will be created
+    - using the '<' token will allow the user to redirect the standard input from a file
+        - if the specified file does not exist the user will be prompted with an error
+Pipes
+    - using the '|' token will allow the user to redirect the standard output of the first command to become the standard input of the second command
+WildCards 
+    - wildcards allow the user to specify multiple files/directories by using the '*' token 
+    - Example: The command "cat *.txt" will print the contents of all the files in the current directory ending with ".txt"
+    - this can also work with directories so "*/*.txt" would be valid because it will go through all the directories within the current directory and find all files that end in ".txt"
 
 
-8) The second flag that is set is for the "print working directory" functionality. This flag, when activited will print all the contents(file names, directories, etc.) of the current
-   directory. If there is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error
-   , and regardless of the mode of the shell, an error message will be printed notifying the user. 
-   
-9) The third and fourth flags are set for the fork, into functionality that requires forking to create child processes.
 
-
-10) The third flag that is set is for the bare functionality of the program. This flag, when activated, will execute command line functionality that is available via the operating system.
-    This includes functionality like: "cat" short for concatenate, "ls" short for list, "echo" used for writing to files, and others. If there is an error in this method and the program is in interactive mode, 
-    the shell identifier message will change to visibly display an error, and regardless of the mode of the shell, an error message will be printed notifying the user. 
-
-
-10) The fourth flag that is set is for the executable path name functionality. This flag, when activated, will go through the specified path and then execute the specified program. If there 
-    is an error in this method and the program is in interactive mode, the shell identifier message will change to visibly display an error, and regardless of the mode of the shell, an error message will 
-    be printed, notifying the user. 
-
-
-11) The fifth flag that is set is for the keyword "exit". This flag, when activated, will print a notifying message to the user and then exit the program if it's in interactive mode. This functionality won't
-    have any error checking because it is just terminating the mysh.c program. 
-
-12) After the execute() function is finished, the program will be on standby for the next user input if it is in interactive mode, or it will terminate if it is in bash mode. 
-
-Special Cases: 
-       - if the command line contains multiple input or output redirects (ex. ./program1 >out1.txt >out2.txt ) mysh will take the last input redirect and use that when redirecting the output/input/pipe
-       - if cd is piped (ex cd ~|./program1) cd will execute first and send 0 to the program it is pipe to. 
-       - if exit is pip (ex. exit | ./prorgam1) mysh will run program1 first and then exit the shell
-
-* testPlan.txt is the file that holds the various functionality and stress testing we used to make sure that the program works as intended. 
+Note: This program is designed to function with all the executables that are accessible in the following directories
+"/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin","/bin"
